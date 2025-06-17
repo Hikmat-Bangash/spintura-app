@@ -1,0 +1,15 @@
+api_version = "2025-04"
+[[extensions]]
+name = "Spin Swipe Custom Fields"
+handle = "spinswipe-custom-fields"
+type = "ui_extension"
+
+
+# Both extension points are required
+[[extensions.targeting]]
+module = "./src/ProductDetailsConfigurationExtension.js"
+target = "admin.product-details.configuration.render"
+
+[[extensions.targeting]]
+module = "./src/ProductDetailsConfigurationExtension.js"
+target = "admin.product-variant-details.configuration.render"

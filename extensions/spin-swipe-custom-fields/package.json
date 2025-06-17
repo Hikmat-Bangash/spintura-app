@@ -1,0 +1,10 @@
+{
+  "name": "spinswipe-custom-fields",
+  "private": true,
+  "version": "1.0.0",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@shopify/ui-extensions": "^2024.1.0",
+    "@shopify/ui-extensions-react": "^2024.1.0"
+  }
+}
