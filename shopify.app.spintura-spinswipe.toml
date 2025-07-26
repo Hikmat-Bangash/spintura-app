@@ -3,26 +3,34 @@
 client_id = "5857d5277c04df444e57a7c2c3c02568"
 name = "spintura-spinswipe"
 handle = "spintura-spinswipe"
-application_url = "https://booty-hash-murray-when.trycloudflare.com"
+application_url = "https://query-divisions-lean-toolkit.trycloudflare.com"
 embedded = true
+
+[webhooks]
+api_version = "2024-04"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+  
+  # Add app proxy configuration for spinning tool
+  [[webhooks.targets]]
+  api_version = "2024-04"
+  resource = "app_proxy"
+  target = "api/public/spinning-selection"
+  subpath = "spinning-tool/selection"
+
+[access_scopes]
+# Updated scopes to include metafield access
+# scopes = "read_products, write_products, read_metafields, write_metafields"
+scopes = "read_products, write_products"
+
+[auth]
+redirect_urls = ["https://query-divisions-lean-toolkit.trycloudflare.com/auth/callback", "https://query-divisions-lean-toolkit.trycloudflare.com/auth/shopify/callback", "https://query-divisions-lean-toolkit.trycloudflare.com/api/auth/callback"]
+
+[pos]
+embedded = false
 
 [build]
 automatically_update_urls_on_dev = true
 include_config_on_deploy = true
-
-[webhooks]
-api_version = "2025-04"
-
-[access_scopes]
-# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products,read_products"
-
-[auth]
-redirect_urls = [
-  "https://booty-hash-murray-when.trycloudflare.com/auth/callback",
-  "https://booty-hash-murray-when.trycloudflare.com/auth/shopify/callback",
-  "https://booty-hash-murray-when.trycloudflare.com/api/auth/callback"
-]
-
-[pos]
-embedded = false

@@ -1,33 +1,1718 @@
-<table style="width:100%;border-collapse:collapse;">
-  <thead>
-    <tr>
-      <th style="border:1px solid #ccc;padding:8px;">Product Name</th>
-      <th style="border:1px solid #ccc;padding:8px;">Price</th>
-      <th style="border:1px solid #ccc;padding:8px;">Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="border:1px solid #ccc;padding:8px;">Red Snowboard</td>
-      <td style="border:1px solid #ccc;padding:8px;">$100.00</td>
-      <td style="border:1px solid #ccc;padding:8px;">Active</td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #ccc;padding:8px;">Blue Skis</td>
-      <td style="border:1px solid #ccc;padding:8px;">$120.00</td>
-      <td style="border:1px solid #ccc;padding:8px;">Inactive</td>
-    </tr>
-    <tr>
-      <td style="border:1px solid #ccc;padding:8px;">Green Helmet</td>
-      <td style="border:1px solid #ccc;padding:8px;">$40.00</td>
-      <td style="border:1px solid #ccc;padding:8px;">Active</td>
-    </tr>
-  </tbody>
-</table>
+<div class="wrapper w-full h-full flex flex-col gap-9 justify-center items-center ">
+  <div
+    class="carousel-container"
+    style="position: relative; width: 400px; height: 400px; perspective: 1000px;"
+  >
+    <!-- Vertical carousel -->
+    <div
+      class="carousel carousel-vertical"
+      style="width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;"
+    >
+      <!-- Panels will be injected by JS -->
+    </div>
+    <!-- Horizontal carousel -->
+    <div
+      class="carousel carousel-horizontal"
+      style="width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2;"
+    >
+      <!-- Panels will be injected by JS -->
+    </div>
+  </div>
+  
+</div>
+
+<style>
+.carousel-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 400px;
+    perspective: 1000px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    touch-action: none; /* Prevent browser gestures */
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .carousel-panel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    touch-action: none;
+  }
+  .panel-content {
+    width: 250px;
+    height: 250px;
+    border: 1px solid #ddd;
+    background: #979494;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .panel-content img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>
+
+<script>
+  // Replace with your actual shop domain and Storefront API token
+  const SHOP_DOMAIN = '1cb12f-54.myshopify.com';
+  // Re-add the hardcoded Storefront API token at the top
+  const STOREFRONT_TOKEN = '9460b0b6db23e5243a0dd946bd430609';
+  const SHOPIFY_STOREFRONT_API = `https://${SHOP_DOMAIN}/api/2023-07/graphql.json`;
+
+  let products = [];
+  let xAxisCollections = []; // Collections for X-axis
+  let yAxisCollections = []; // Collections for Y-axis
+  let currentXAxisCollection = null; // Currently selected X-axis collection
+  let yAxisProducts = []; // Products from Y-axis collections
+  const PANEL_COUNT = 5;
+  let horizontalIndex = 0;
+  let verticalIndex = 0;
+  let activeCarousel = "horizontal";
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchEndX = 0;
+  let touchEndY = 0;
+  let listenersAttached = false;
+  let isMouseDown = false;
+
+  // Show loading spinner
+  function showLoading() {
+    const carouselVertical = document.querySelector('.carousel-vertical');
+    const carouselHorizontal = document.querySelector('.carousel-horizontal');
+    if (carouselVertical) carouselVertical.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2em;">Loading...</div>';
+    if (carouselHorizontal) carouselHorizontal.innerHTML = '';
+  }
+
+  function duplicateVerticalPanels(images) {
+    const duplicatedImages = [...images];
+    const totalImages = images.length;
+    if (totalImages < PANEL_COUNT) {
+      let i = 0;
+      while (duplicatedImages.length < PANEL_COUNT) {
+        duplicatedImages.push(images[i % totalImages]);
+        i++;
+      }
+    }
+    return duplicatedImages;
+  }
+
+  // Function to create non-duplicate order for products or collections (similar to React component)
+  function createNonDuplicateOrder(items) {
+    if (!items || items.length === 0) {
+      return [];
+    }
+    const result = [...items];
+    const totalItems = items.length;
+
+    // If there are fewer than 5 items, duplicate them but maintain the same sequence
+    if (totalItems < PANEL_COUNT) {
+      let i = 0;
+      while (result.length < PANEL_COUNT) {
+        result.push(items[i % totalItems]);
+        i++;
+      }
+    }
+
+    // Return a fixed array with at least 5 items
+    return result;
+  }
+
+  // Function to create dynamic product/collection array for real-time updates (similar to React component)
+  function createDynamicProductArray(items, currentIndex) {
+    if (!items || items.length === 0) {
+      return [];
+    }
+    const totalItems = items.length;
+    const totalPages = Math.ceil(totalItems / PANEL_COUNT); // Total number of pages
+
+    const normalizedIndex = currentIndex % 5;
+
+    // Determine current page index
+    const currentPage = Math.floor(currentIndex / PANEL_COUNT) % totalPages;
+    if (totalItems === 0) return [];
+
+    // Helper function for circular indexing
+    const getCircularIndex = (index) => (index + totalItems) % totalItems;
+
+    // Determine if a shift should occur (only when currentIndex % 5 === 4)
+    const shiftTriggerLeft = normalizedIndex === 0 && currentIndex % 5 == 0;
+    const shiftTriggerRight = normalizedIndex === 4;
+
+    // Compute start index for the page shift
+    let startIndex = currentPage * PANEL_COUNT;
+
+    // Extract the relevant products dynamically to always get 5 elements
+    const result = [];
+    for (let i = 0; i < 5; i++) {
+      result.push(items[getCircularIndex(startIndex + i)]);
+    }
+
+    // If shiftTrigger is true, replace the last element with the first element of the next page
+    if (shiftTriggerRight) {
+      let nextPageStartIndex = (startIndex + PANEL_COUNT) % totalItems;
+      result[0] = items[nextPageStartIndex];
+    }
+    if (shiftTriggerLeft) {
+      let prevPageStartIndex = totalItems - (startIndex + 1);
+      result[4] = items[prevPageStartIndex];
+    }
+
+    return result;
+  }
+
+  function renderCarousels() {
+    const carouselVertical = document.querySelector('.carousel-vertical');
+    const carouselHorizontal = document.querySelector('.carousel-horizontal');
+    
+    // Check if we have X-axis and Y-axis collections setup
+    const hasXAxisCollections = xAxisCollections.length > 0;
+    const hasYAxisCollections = yAxisCollections.length > 0;
+    
+    if (!hasXAxisCollections && !products.length) {
+      showLoading();
+      return;
+    }
+    
+    const rotationPerPanelHorizontal = 360 / PANEL_COUNT;
+    const rotationPerPanelVertical = 360 / PANEL_COUNT;
+    
+    if (hasXAxisCollections) {
+      // X-axis shows collections, Y-axis shows products from selected collection
+      const totalXAxisCollections = xAxisCollections.length;
+      const normalizedHorizontalIndex = ((horizontalIndex % totalXAxisCollections) + totalXAxisCollections) % totalXAxisCollections;
+      const currentXAxisCollection = xAxisCollections[normalizedHorizontalIndex];
+      
+      // Update current X-axis collection
+      if (currentXAxisCollection !== window.currentXAxisCollection) {
+        window.currentXAxisCollection = currentXAxisCollection;
+        updateYAxisProductsForXAxisCollection(currentXAxisCollection);
+      }
+      
+      // Create dynamic array for X-axis collections
+      const dynamicXAxisArray = totalXAxisCollections > PANEL_COUNT 
+        ? createDynamicProductArray(xAxisCollections, normalizedHorizontalIndex)
+        : createNonDuplicateOrder(xAxisCollections);
+      
+      // Render horizontal carousel with X-axis collections
+      carouselHorizontal.innerHTML = '';
+      dynamicXAxisArray.forEach(function(collection, index) {
+        const rotateAngle = index * rotationPerPanelHorizontal;
+        const panel = document.createElement('div');
+        panel.className = 'carousel-panel';
+        panel.style.transform = `rotateY(${rotateAngle}deg) translateZ(170px)`;
+        panel.innerHTML = `
+          <div class="panel-content">
+            <img src="${collection.displayImage}" alt="${collection.title}" />
+          </div>
+        `;
+        carouselHorizontal.appendChild(panel);
+      });
+      carouselHorizontal.style.zIndex = activeCarousel === 'horizontal' ? 2 : 1;
+      carouselHorizontal.style.transform = `rotateY(${horizontalIndex * -rotationPerPanelHorizontal}deg)`;
+      
+      // Render vertical carousel with Y-axis products
+      if (yAxisProducts.length > 0) {
+        const totalYAxisProducts = yAxisProducts.length;
+        const normalizedVerticalIndex = ((verticalIndex % totalYAxisProducts) + totalYAxisProducts) % totalYAxisProducts;
+        const currentYAxisProduct = yAxisProducts[normalizedVerticalIndex];
+        const currentProductImages = duplicateVerticalPanels(currentYAxisProduct?.images || []);
+        
+        carouselVertical.innerHTML = '';
+        currentProductImages.forEach(function(image, index) {
+          const rotateAngle = index * rotationPerPanelVertical;
+          const panel = document.createElement('div');
+          panel.className = 'carousel-panel';
+          panel.style.transform = `rotateX(${rotateAngle}deg) translateZ(170px)`;
+          panel.innerHTML = `
+            <div class="panel-content">
+              <img src="${image}" alt="vertical-carousel-img" />
+            </div>
+          `;
+          carouselVertical.appendChild(panel);
+        });
+        carouselVertical.style.zIndex = activeCarousel === 'vertical' ? 2 : 1;
+        carouselVertical.style.transform = `rotateX(${verticalIndex * -rotationPerPanelVertical}deg)`;
+      } else {
+        // Show loading for Y-axis
+        carouselVertical.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2em;">Loading products...</div>';
+      }
+    } else {
+      // Legacy mode: X-axis shows products, Y-axis shows variants
+      if (!products.length) {
+        showLoading();
+        return;
+      }
+      
+      const totalProducts = products.length;
+      const normalizedHorizontalIndex = ((horizontalIndex % totalProducts) + totalProducts) % totalProducts;
+      const currentProduct = products[normalizedHorizontalIndex];
+      const currentProductImages = duplicateVerticalPanels(currentProduct?.images || []);
+
+      // Create dynamic product array for horizontal carousel
+      const dynamicProductsArray = totalProducts > PANEL_COUNT 
+        ? createDynamicProductArray(products, normalizedHorizontalIndex)
+        : createNonDuplicateOrder(products);
+
+      // Render vertical carousel
+      carouselVertical.innerHTML = '';
+      currentProductImages.forEach(function(image, index) {
+        const rotateAngle = index * rotationPerPanelVertical;
+        const panel = document.createElement('div');
+        panel.className = 'carousel-panel';
+        panel.style.transform = `rotateX(${rotateAngle}deg) translateZ(170px)`;
+        panel.innerHTML = `
+          <div class="panel-content">
+            <img src="${image}" alt="vertical-carousel-img" />
+          </div>
+        `;
+        carouselVertical.appendChild(panel);
+      });
+      carouselVertical.style.zIndex = activeCarousel === 'vertical' ? 2 : 1;
+      carouselVertical.style.transform = `rotateX(${verticalIndex * -rotationPerPanelVertical}deg)`;
+
+      // Render horizontal carousel with dynamic products
+      carouselHorizontal.innerHTML = '';
+      dynamicProductsArray.forEach(function(product, index) {
+        const rotateAngle = index * rotationPerPanelHorizontal;
+        const panel = document.createElement('div');
+        panel.className = 'carousel-panel';
+        panel.style.transform = `rotateY(${rotateAngle}deg) translateZ(170px)`;
+        panel.innerHTML = `
+          <div class="panel-content">
+            <img src="${product.images[0]}" alt="${product.name}" />
+          </div>
+        `;
+        carouselHorizontal.appendChild(panel);
+      });
+      carouselHorizontal.style.zIndex = activeCarousel === 'horizontal' ? 2 : 1;
+      carouselHorizontal.style.transform = `rotateY(${horizontalIndex * -rotationPerPanelHorizontal}deg)`;
+    }
+  }
+
+  // Touch events
+  function handleTouchStart(e) {
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+  }
+  function handleTouchMove(e) {
+    const touch = e.touches[0];
+    touchEndX = touch.clientX;
+    touchEndY = touch.clientY;
+    
+    // Calculate deltas for real-time rotation
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    
+    // Apply real-time rotation based on the active carousel
+    if (Math.abs(deltaX) > Math.abs(deltaY) && activeCarousel === 'horizontal') {
+      const carousel = document.querySelector('.carousel-horizontal');
+      const rotationPerPanel = 360 / PANEL_COUNT;
+      const currentRotation = horizontalIndex * -rotationPerPanel + deltaX * 0.5;
+      carousel.style.transform = `rotateY(${currentRotation}deg)`;
+    }
+    
+    if (Math.abs(deltaY) > Math.abs(deltaX) && activeCarousel === 'vertical') {
+      const verticalCarousel = document.querySelector('.carousel-vertical');
+      const rotationPerPanel = 360 / PANEL_COUNT;
+      const currentRotation = verticalIndex * -rotationPerPanel - deltaY * 0.5;
+      verticalCarousel.style.transform = `rotateX(${currentRotation}deg)`;
+    }
+  }
+  function handleTouchEnd() {
+    handleSwipe();
+  }
+
+  // Mouse events for desktop
+  function handleMouseDown(e) {
+    isMouseDown = true;
+    touchStartX = e.clientX;
+    touchStartY = e.clientY;
+  }
+  function handleMouseMove(e) {
+    if (!isMouseDown) return;
+    touchEndX = e.clientX;
+    touchEndY = e.clientY;
+    
+    // Calculate deltas for real-time rotation
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    
+    // Apply real-time rotation based on the active carousel
+    if (Math.abs(deltaX) > Math.abs(deltaY) && activeCarousel === 'horizontal') {
+      const carousel = document.querySelector('.carousel-horizontal');
+      const rotationPerPanel = 360 / PANEL_COUNT;
+      const currentRotation = horizontalIndex * -rotationPerPanel + deltaX * 0.5;
+      carousel.style.transform = `rotateY(${currentRotation}deg)`;
+    }
+    
+    if (Math.abs(deltaY) > Math.abs(deltaX) && activeCarousel === 'vertical') {
+      const verticalCarousel = document.querySelector('.carousel-vertical');
+      const rotationPerPanel = 360 / PANEL_COUNT;
+      const currentRotation = verticalIndex * -rotationPerPanel - deltaY * 0.5;
+      verticalCarousel.style.transform = `rotateX(${currentRotation}deg)`;
+    }
+  }
+  function handleMouseUp(e) {
+    if (!isMouseDown) return;
+    isMouseDown = false;
+    touchEndX = e.clientX;
+    touchEndY = e.clientY;
+    handleSwipe();
+  }
+
+  function handleSwipe() {
+    const deltaX = touchStartX - touchEndX;
+    const deltaY = touchStartY - touchEndY;
+    const horizontalSwipe = Math.abs(deltaX) > 50;
+    const verticalSwipe = Math.abs(deltaY) > 50;
+    
+    // Handle horizontal swipe
+    if (horizontalSwipe && Math.abs(deltaX) > Math.abs(deltaY)) {
+      activeCarousel = "horizontal";
+      
+      // Determine number of slides to move based on swipe distance
+      let slides = 0;
+      if (Math.abs(deltaX) > 60) slides = 1;
+      if (Math.abs(deltaX) > 250) slides = 2;
+      if (Math.abs(deltaX) > 450) slides = 3;
+      
+      if (deltaX > 50) {
+        // Swipe left (next product)
+        horizontalIndex += slides;
+      } else if (deltaX < -50) {
+        // Swipe right (previous product)
+        horizontalIndex -= slides;
+      }
+      verticalIndex = 0; // Reset vertical index when switching products
+    }
+    
+    // Handle vertical swipe
+    if (verticalSwipe && Math.abs(deltaY) > Math.abs(deltaX)) {
+      activeCarousel = "vertical";
+      
+      // Determine number of slides to move based on swipe distance
+      let slides = 0;
+      if (Math.abs(deltaY) > 60) slides = 1;
+      if (Math.abs(deltaY) > 250) slides = 2;
+      if (Math.abs(deltaY) > 450) slides = 3;
+      
+      if (deltaY < 50) {
+        // Swipe down
+        verticalIndex += slides;
+      } else if (deltaY > -50) {
+        // Swipe up
+        verticalIndex -= slides;
+      }
+    }
+    
+    // Reset carousel transitions and render
+    const carouselHorizontal = document.querySelector('.carousel-horizontal');
+    const carouselVertical = document.querySelector('.carousel-vertical');
+    
+    if (carouselHorizontal) {
+      carouselHorizontal.style.transition = 'transform 0.3s ease';
+    }
+    if (carouselVertical) {
+      carouselVertical.style.transition = 'transform 0.3s ease';
+    }
+    
+    renderCarousels();
+    
+    // Reset transition after animation completes
+    setTimeout(() => {
+      if (carouselHorizontal) {
+        carouselHorizontal.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1)';
+      }
+      if (carouselVertical) {
+        carouselVertical.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1)';
+      }
+    }, 300);
+  }
+
+  function attachListenersWhenReady() {
+    const carouselContainer = document.querySelector('.carousel-container');
+    if (carouselContainer && !listenersAttached) {
+      // Touch events
+      carouselContainer.addEventListener('touchstart', handleTouchStart, {passive: true});
+      carouselContainer.addEventListener('touchmove', handleTouchMove, {passive: true});
+      carouselContainer.addEventListener('touchend', handleTouchEnd, {passive: true});
+      // Mouse events
+      carouselContainer.addEventListener('mousedown', handleMouseDown);
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      listenersAttached = true;
+    }
+  }
+
+  // Fetch products from Shopify Storefront API
+  async function fetchProducts() {
+    showLoading();
+    const query = `{
+      products(first: 100) {
+        edges {
+          node {
+            id
+            title
+            featuredImage { url altText }
+            variants(first: 50) {
+              edges {
+                node {
+                  id
+                  title
+                  image { url altText }
+                }
+              }
+            }
+          }
+        }
+      }
+    }`;
+    
+    try {
+      const res = await fetch(SHOPIFY_STOREFRONT_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+        },
+        body: JSON.stringify({ query }),
+      });
+      
+      const data = await res.json();
+      console.log('Products API response:', data);
+      
+      // Fetch product status data for filtering
+      const productStatusData = await fetchProductStatus();
+      
+      let rawProducts = (data.data && data.data.products && data.data.products.edges || []).map(edge => {
+        const node = edge.node;
+        return {
+          id: node.id,
+          name: node.title,
+          images: [
+            ...(node.featuredImage && node.featuredImage.url ? [node.featuredImage.url] : []),
+            ...((node.variants.edges || []).map(v => v.node.image && v.node.image.url ? v.node.image.url : null).filter(Boolean))
+          ],
+          variants: (node.variants.edges || []).map(v => ({
+            id: v.node.id,
+            title: v.node.title,
+            image: v.node.image && v.node.image.url ? v.node.image.url : null
+          }))
+        };
+      });
+      
+      // Apply product status filtering
+      const filteredProducts = filterProductsByStatus(rawProducts, productStatusData);
+      products = filteredProducts;
+      
+      afterProductsLoaded();
+    } catch (err) {
+      console.error('Products API fetch error:', err);
+      const carouselVertical = document.querySelector('.carousel-vertical');
+      if (carouselVertical) carouselVertical.innerHTML = '<div style="color:red;">Failed to load products</div>';
+    }
+  }
+
+  let menuLevels = { level1: [], level2: [], level3: [] };
+  let allProductsBackup = [];
+  let settingsPanelVisible = false;
+  let menuLoaded = false;
+
+  // Show/hide loading in settings panel
+  function setSettingsLoading(isLoading) {
+    const panel = document.getElementById('settings-panel');
+    if (!panel) return;
+    let loadingDiv = document.getElementById('settings-loading');
+    if (isLoading) {
+      if (!loadingDiv) {
+        loadingDiv = document.createElement('div');
+        loadingDiv.id = 'settings-loading';
+        loadingDiv.style = 'text-align:center;padding:1rem;color:#4285f4;font-weight:600;';
+        loadingDiv.innerText = 'Loading menu collections...';
+        panel.appendChild(loadingDiv);
+      }
+      panel.querySelectorAll('select, label').forEach(el => el.style.display = 'none');
+    } else {
+      if (loadingDiv) loadingDiv.remove();
+      panel.querySelectorAll('select, label').forEach(el => el.style.display = 'block');
+    }
+  }
+
+  // Dynamically update dropdowns with collection names
+  function updateLayerDropdowns() {
+    const xAxisSelect = document.getElementById('x-axis-select');
+    const yAxisSelect = document.getElementById('y-axis-select');
+    if (!xAxisSelect || !yAxisSelect) return;
+    xAxisSelect.innerHTML = '<option value="all">All Products</option>';
+    yAxisSelect.innerHTML = '<option value="none">None</option>';
+    ['level1', 'level2', 'level3'].forEach((layer) => {
+      const items = menuLevels[layer] || [];
+      // Try to get collection names from resource or title
+      let names = [];
+      items.forEach(item => {
+        if (item.title) names.push(item.title);
+        // If item.resource is an array of products, try to get collection from first product
+        if (Array.isArray(item.resource) && item.resource.length > 0 && item.resource[0].collections) {
+          const colls = item.resource[0].collections;
+          if (Array.isArray(colls)) {
+            colls.forEach(c => { if (c && c.title) names.push(c.title); });
+          } else if (typeof colls === 'object') {
+            Object.values(colls).forEach(c => { if (c && c.title) names.push(c.title); });
+          }
+        }
+      });
+      // Remove duplicates and falsy
+      names = [...new Set(names)].filter(Boolean);
+      console.log(`Layer ${layer} collection names:`, names);
+      if (names.length) {
+        xAxisSelect.innerHTML += `<option value="${layer}">${names.join(', ')}</option>`;
+        yAxisSelect.innerHTML += `<option value="${layer}">${names.join(', ')}</option>`;
+      }
+    });
+  }
+
+  // Save all products for reset
+  function afterProductsLoaded() {
+    allProductsBackup = products.slice();
+    renderCarousels();
+  }
+
+  // Settings UI logic
+  function showSettingsPanel() {
+    document.getElementById('settings-panel').style.display = 'block';
+    settingsPanelVisible = true;
+    setSettingsLoading(!menuLoaded);
+  }
+  function hideSettingsPanel() {
+    document.getElementById('settings-panel').style.display = 'none';
+    settingsPanelVisible = false;
+  }
+ 
+
+  function formatProductForCarousel(productNode) {
+    // Support both GraphQL edges and plain arrays for variants
+    let variants = [];
+    if (productNode.variants && productNode.variants.edges) {
+      variants = productNode.variants.edges.map(v => v.node);
+    } else if (Array.isArray(productNode.variants)) {
+      variants = productNode.variants;
+    }
+    return {
+      name: productNode.title,
+      images: [
+        ...(productNode.featuredImage && productNode.featuredImage.url ? [productNode.featuredImage.url] : []),
+        ...variants.map(v => v.image && v.image.url ? v.image.url : null).filter(Boolean)
+      ],
+      variants: variants.map(v => ({
+        id: v.id,
+        title: v.title,
+        image: v.image && v.image.url ? v.image.url : null
+      }))
+    };
+  }
+
+  async function updateProductsForLayer(layer) {
+    console.log('updateProductsForLayer called with:', layer);
+    if (layer === 'all') {
+      products = allProductsBackup.slice();
+    } else if (menuLevels[layer] && menuLevels[layer].length) {
+      // Flatten all products from all collections in the selected layer
+      let allLayerProducts = [];
+      menuLevels[layer].forEach(item => {
+        if (Array.isArray(item.resource)) {
+          item.resource.forEach(productNode => {
+            allLayerProducts.push(formatProductForCarousel(productNode));
+          });
+        }
+      }); 
+      
+      // Fetch product status data for filtering
+      const productStatusData = await fetchProductStatus();
+      
+      // Apply product status filtering
+      products = filterProductsByStatus(allLayerProducts, productStatusData);
+    } else {
+      console.warn('No products found for layer:', layer, menuLevels[layer]);
+      products = [];
+    }
+    renderCarousels();
+  }
+ 
+
+  // Patch fetchMenuAndFormat to update dropdowns after menu loads
+  function fetchMenuAndFormat() {
+    setSettingsLoading(true);
+    const menuQuery = `{
+      menu(handle: "main-menu") {
+        title
+        items {
+          title
+          type
+          url
+          resource {
+            ... on Collection {
+              id
+              title
+              handle
+              products(first: 100) {
+                edges {
+                  node {
+                    id
+                    title
+                    handle
+                    descriptionHtml
+                    productType
+                    tags
+                    featuredImage { url altText }
+                    priceRange {
+                      minVariantPrice { amount currencyCode }
+                      maxVariantPrice { amount currencyCode }
+                    }
+                    media(first: 50) {
+                      edges {
+                        node {
+                          __typename
+                          ... on MediaImage {
+                            image { url altText }
+                          }
+                          ... on Video {
+                            sources { url mimeType }
+                            previewImage { url }
+                          }
+                        }
+                      }
+                    }
+                    collections(first: 50) {
+                      edges { node { id title handle } }
+                    }
+                    variants(first: 50) {
+                      edges {
+                        node {
+                          id
+                          title
+                          price { amount currencyCode }
+                          compareAtPrice { amount currencyCode }
+                          availableForSale
+                          sku
+                          weight
+                          weightUnit
+                          barcode
+                          image { url altText }
+                          selectedOptions { name value }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          items {
+            title
+            type
+            url
+            resource {
+              ... on Collection {
+                id
+                title
+                handle
+                products(first: 100) {
+                  edges {
+                    node {
+                      id
+                      title
+                      handle
+                      descriptionHtml
+                      productType
+                      tags
+                      featuredImage { url altText }
+                      priceRange {
+                        minVariantPrice { amount currencyCode }
+                        maxVariantPrice { amount currencyCode }
+                      }
+                      media(first: 50) {
+                        edges {
+                          node {
+                            __typename
+                            ... on MediaImage {
+                              image { url altText }
+                            }
+                            ... on Video {
+                              sources { url mimeType }
+                              previewImage { url }
+                            }
+                          }
+                        }
+                      }
+                      collections(first: 50) {
+                        edges { node { id title handle } }
+                      }
+                      variants(first: 50) {
+                        edges {
+                          node {
+                            id
+                            title
+                            price { amount currencyCode }
+                            compareAtPrice { amount currencyCode }
+                            availableForSale
+                            sku
+                            weight
+                            weightUnit
+                            barcode
+                            image { url altText }
+                            selectedOptions { name value }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            items {
+              title
+              type
+              url
+              resource {
+                ... on Collection {
+                  id
+                  title
+                  handle
+                  products(first: 100) {
+                    edges {
+                      node {
+                        id
+                        title
+                        handle
+                        descriptionHtml
+                        productType
+                        tags
+                        featuredImage { url altText }
+                        priceRange {
+                          minVariantPrice { amount currencyCode }
+                          maxVariantPrice { amount currencyCode }
+                        }
+                        media(first: 50) {
+                          edges {
+                            node {
+                              __typename
+                              ... on MediaImage {
+                                image { url altText }
+                              }
+                              ... on Video {
+                                sources { url mimeType }
+                                previewImage { url }
+                              }
+                            }
+                          }
+                        }
+                        collections(first: 50) {
+                          edges { node { id title handle } }
+                        }
+                        variants(first: 50) {
+                          edges {
+                            node {
+                              id
+                              title
+                              price { amount currencyCode }
+                              compareAtPrice { amount currencyCode }
+                              availableForSale
+                              sku
+                              weight
+                              weightUnit
+                              barcode
+                              image { url altText }
+                              selectedOptions { name value }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }`;
+
+    fetch(SHOPIFY_STOREFRONT_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+      },
+      body: JSON.stringify({ query: menuQuery }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log('Menu API response:', data);
+        const menu = data.data.menu;
+        // Format menu into levels
+        function formatProduct(productNode) {
+          return {
+            id: productNode.id,
+            handle: productNode.handle,
+            title: productNode.title,
+            description: productNode.descriptionHtml?.replace(/<\/?[^>]+(>|$)/g, ''),
+            productType: productNode.productType,
+            priceRange: {
+              amount: productNode.priceRange.minVariantPrice.amount,
+              currencyCode: productNode.priceRange.minVariantPrice.currencyCode,
+            },
+            featuredImage: productNode.featuredImage?.url || 'placeholder.jpg',
+            tags: productNode.tags,
+            collections: productNode.collections?.edges?.map(
+              (collectionEdge) => collectionEdge.node.title,
+            ) || [],
+            media: productNode.media?.edges?.map((mediaEdge) => {
+              const media = mediaEdge.node;
+              if (media.__typename === 'MediaImage') {
+                return {
+                  type: 'image',
+                  url: media.image.url,
+                  altText: media.image.altText,
+                };
+              }
+              if (media.__typename === 'Video') {
+                return {
+                  type: 'video',
+                  sources: media.sources,
+                  previewImage: media.previewImage?.url,
+                };
+              }
+              return null;
+            }).filter(Boolean) || [],
+            variants: productNode.variants?.edges?.map((variantNode) => ({
+              id: variantNode.node.id,
+              title: variantNode.node.title,
+              price: {
+                amount: variantNode.node.price.amount,
+                currencyCode: variantNode.node.price.currencyCode,
+              },
+              compareAtPrice: variantNode.node.compareAtPrice
+                ? {
+                    amount: variantNode.node.compareAtPrice.amount,
+                    currencyCode: variantNode.node.compareAtPrice.currencyCode,
+                  }
+                : null,
+              availableForSale: variantNode.node.availableForSale,
+              sku: variantNode.node.sku,
+              weight: variantNode.node.weight,
+              weightUnit: variantNode.node.weightUnit,
+              barcode: variantNode.node.barcode,
+              image: variantNode.node.image
+                ? {
+                    url: variantNode.node.image.url,
+                    altText: variantNode.node.image.altText,
+                  }
+                : null,
+              selectedOptions: variantNode.node.selectedOptions.map((option) => ({
+                name: option.name,
+                value: option.value,
+              })),
+            })) || [],
+          };
+        }
+        function processMenuItem(item) {
+          return {
+            title: item.title,
+            type: item.type,
+            url: item.url,
+            resource:
+              item.resource && item.resource.products
+                ? item.resource.products.edges.map((edge) => formatProduct(edge.node))
+                : [],
+          };
+        }
+        if (!menu || !menu.items) {
+          console.error('No menu or menu.items found in API response:', menu);
+          setSettingsLoading(false);
+          return;
+        }
+        // Ignore the first three items (Home, Catalog, Contact)
+        const filtered = menu.items.slice(3);
+        // Level 1: All direct children after the first three
+        const level1 = filtered.map(processMenuItem);
+        // Level 2: All children of those (flattened)
+        const level2 = filtered.flatMap((item) =>
+          (item.items || []).map(processMenuItem),
+        );
+        // Level 3: All children of level 2 (flattened)
+        const level3 = filtered.flatMap((item) =>
+          (item.items || []).flatMap((sub) =>
+            (sub.items || []).map(processMenuItem),
+          ),
+        );
+        console.log('Menu Hierarchy Structure:', {
+          level1,
+          level2,
+          level3,
+        });
+        menuLevels.level1 = level1;
+        menuLevels.level2 = level2;
+        menuLevels.level3 = level3;
+        menuLoaded = true;
+        setSettingsLoading(false);
+        updateLayerDropdowns();
+        var xAxisSelect = document.getElementById('x-axis-select');
+        if (xAxisSelect) {
+          updateProductsForLayer(xAxisSelect.value).catch(err => {
+            console.error('Error updating products for layer:', err);
+          });
+        }
+      })
+      .catch(err => {
+        setSettingsLoading(false);
+        console.error('Menu API fetch error:', err);
+      });
+  }
+
+  // Replace fetchSpinningSelection with a version that fetches from the app proxy endpoint and uses collectionIds
+  async function fetchSpinningSelection() {
+    try {
+      const shop = window.Shopify && window.Shopify.shop ? window.Shopify.shop : window.location.hostname;
+      const res = await fetch(`/apps/spinning-tool/selection?shop=${encodeURIComponent(shop)}`);
+      const data = await res.json();
+      console.log('Metafield selection response:', data);
+      return data.selection || null;
+    } catch (err) {
+      console.error('Metafield selection fetch error:', err);
+      return null;
+    }
+  }
+
+  // Replace fetchProductsForLayer to use collectionIds
+  async function fetchProductsForLayer(collectionIds) {
+    if (!Array.isArray(collectionIds) || collectionIds.length === 0) {
+      fetchProducts(); // fallback to all products
+      return;
+    }
+    const query = `query GetCollectionProducts($ids: [ID!]!) {\n  nodes(ids: $ids) {\n    ... on Collection {\n      products(first: 100) {\n        edges {\n          node {\n            id\n            title\n            featuredImage { url altText }\n            variants(first: 50) {\n              edges {\n                node {\n                  id\n                  title\n                  image { url altText }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}`;
+    const variables = { ids: collectionIds.map(id => `gid://shopify/Collection/${id}`) };
+    const res = await fetch(SHOPIFY_STOREFRONT_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+    const data = await res.json();
+    
+    // Fetch product status data for filtering
+    const productStatusData = await fetchProductStatus();
+    
+    // Flatten products from all collections
+    let rawProducts = [];
+    if (data.data && data.data.nodes) {
+      data.data.nodes.forEach(node => {
+        if (node && node.products && node.products.edges) {
+          node.products.edges.forEach(edge => {
+            const product = edge.node;
+            rawProducts.push({
+              id: product.id,
+              name: product.title,
+              images: [
+                ...(product.featuredImage && product.featuredImage.url ? [product.featuredImage.url] : []),
+                ...((product.variants.edges || []).map(v => v.node.image && v.node.image.url ? v.node.image.url : null).filter(Boolean))
+              ],
+              variants: (product.variants.edges || []).map(v => ({
+                id: v.node.id,
+                title: v.node.title,
+                image: v.node.image && v.node.image.url ? v.node.image.url : null
+              }))
+            });
+          });
+        }
+      });
+    }
+    
+    // Apply product status filtering
+    products = filterProductsByStatus(rawProducts, productStatusData);
+    renderCarousels();
+  }
+
+  // Fetch settings from public API endpoint
+  async function fetchPublicSettings() {
+    try {
+      const shop = window.Shopify && window.Shopify.shop ? window.Shopify.shop : window.location.hostname;
+      const response = await fetch(`https://shopify-management-app.vercel.app/api/public/settings?shop=1cb12f-54.myshopify.com`);
+      const data = await response.json();
+      console.log('DATABASE settings API response:', data);
+      return data;
+    } catch (error) {
+      console.error('DATABASE settings API fetch error:', error);
+      return null;
+    }
+  }
+
+  // Fetch collections for X-axis (parent collections)
+  async function fetchXAxisCollections(xAxisCollectionIds) {
+    if (!Array.isArray(xAxisCollectionIds) || xAxisCollectionIds.length === 0) {
+      console.log('No xAxisCollectionIds found');
+      return [];
+    }
+
+    console.log('Fetching X-axis collections:', xAxisCollectionIds);
+    
+    const allCollections = [];
+    
+    for (const collectionId of xAxisCollectionIds) {
+      try {
+        const query = `query GetCollection($handle: String!) {
+          collection(handle: $handle) {
+            id
+            title
+            handle
+            image { url altText }
+          }
+        }`;
+
+        const response = await fetch(SHOPIFY_STOREFRONT_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+          },
+          body: JSON.stringify({ 
+            query, 
+            variables: { handle: collectionId } 
+          }),
+        });
+
+        const data = await response.json();
+        console.log(`X-axis collection ${collectionId}:`, data);
+
+        if (data.data && data.data.collection) {
+          const collection = data.data.collection;
+          allCollections.push({
+            id: collection.id,
+            title: collection.title,
+            handle: collection.handle,
+            image: collection.image?.url || null,
+            // Use collection title as fallback image if no image
+            displayImage: collection.image?.url || `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#f0f0f0"/><text x="100" y="100" text-anchor="middle" dy=".3em" font-size="16" fill="#666">${collection.title}</text></svg>`
+          });
+        }
+      } catch (error) {
+        console.error(`Error fetching X-axis collection ${collectionId}:`, error);
+      }
+    }
+
+    console.log('All X-axis collections:', allCollections);
+    return allCollections;
+  }
+
+  // Fetch products from Y-axis collections (sub-collections)
+  async function fetchYAxisCollectionProducts(yAxisCollectionIds) {
+    if (!Array.isArray(yAxisCollectionIds) || yAxisCollectionIds.length === 0) {
+      console.log('No yAxisCollectionIds found');
+      return [];
+    }
+
+    console.log('Fetching products from Y-axis collections:', yAxisCollectionIds);
+    
+    const allProducts = [];
+    
+    for (const collectionId of yAxisCollectionIds) {
+      try {
+        const query = `query GetCollectionProducts($handle: String!) {
+          collection(handle: $handle) {
+            id
+            title
+            handle
+            products(first: 100) {
+              edges {
+                node {
+                  id
+                  title
+                  handle
+                  descriptionHtml
+                  productType
+                  tags
+                  featuredImage { url altText }
+                  priceRange {
+                    minVariantPrice { amount currencyCode }
+                    maxVariantPrice { amount currencyCode }
+                  }
+                  variants(first: 50) {
+                    edges {
+                      node {
+                        id
+                        title
+                        price { amount currencyCode }
+                        compareAtPrice { amount currencyCode }
+                        availableForSale
+                        sku
+                        image { url altText }
+                        selectedOptions { name value }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }`;
+
+        const response = await fetch(SHOPIFY_STOREFRONT_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+          },
+          body: JSON.stringify({ 
+            query, 
+            variables: { handle: collectionId } 
+          }),
+        });
+
+        const data = await response.json();
+        console.log(`Products from Y-axis collection ${collectionId}:`, data);
+
+        if (data.data && data.data.collection && data.data.collection.products) {
+          const collectionProducts = data.data.collection.products.edges.map(edge => ({
+            collectionId: collectionId,
+            collectionTitle: data.data.collection.title,
+            ...edge.node
+          }));
+          allProducts.push(...collectionProducts);
+        }
+      } catch (error) {
+        console.error(`Error fetching products from Y-axis collection ${collectionId}:`, error);
+      }
+    }
+
+    // Fetch product status data for filtering
+    const productStatusData = await fetchProductStatus();
+    
+    // Apply product status filtering
+    const filteredProducts = filterProductsByStatus(allProducts, productStatusData);
+    
+    console.log('All products from Y-axis collections (after filtering):', filteredProducts);
+    return filteredProducts;
+  }
+
+  // Fetch products from xAxisCollections (legacy function for backward compatibility)
+  async function fetchXAxisCollectionProducts(xAxisCollections) {
+    if (!Array.isArray(xAxisCollections) || xAxisCollections.length === 0) {
+      console.log('No xAxisCollections found');
+      return [];
+    }
+
+    console.log('Fetching products from xAxisCollections:', xAxisCollections);
+    
+    // Extract collection IDs from xAxisCollections
+    const collectionIds = xAxisCollections.map(collection => {
+      if (!collection || !collection.id) {
+        console.warn('Collection missing ID in fetchXAxisCollectionProducts:', collection);
+        return null;
+      }
+      // Extract the ID from the gid format: "gid://shopify/Collection/women" -> "women"
+      const idMatch = collection.id.match(/gid:\/\/shopify\/Collection\/(.+)/);
+      return idMatch ? idMatch[1] : null;
+    }).filter(Boolean);
+
+    console.log('Extracted collection IDs:', collectionIds);
+
+    if (collectionIds.length === 0) {
+      console.log('No valid collection IDs found');
+      return [];
+    }
+
+    // Fetch products from all collections
+    const allProducts = [];
+    
+    for (const collectionId of collectionIds) {
+      try {
+        const query = `query GetCollectionProducts($handle: String!) {
+          collection(handle: $handle) {
+            id
+            title
+            handle
+            products(first: 100) {
+              edges {
+                node {
+                  id
+                  title
+                  handle
+                  descriptionHtml
+                  productType
+                  tags
+                  featuredImage { url altText }
+                  priceRange {
+                    minVariantPrice { amount currencyCode }
+                    maxVariantPrice { amount currencyCode }
+                  }
+                  variants(first: 50) {
+                    edges {
+                      node {
+                        id
+                        title
+                        price { amount currencyCode }
+                        compareAtPrice { amount currencyCode }
+                        availableForSale
+                        sku
+                        image { url altText }
+                        selectedOptions { name value }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }`;
+
+        const response = await fetch(SHOPIFY_STOREFRONT_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+          },
+          body: JSON.stringify({ 
+            query, 
+            variables: { handle: collectionId } 
+          }),
+        });
+
+        const data = await response.json();
+        console.log(`Products from collection ${collectionId}:`, data);
+
+        if (data.data && data.data.collection && data.data.collection.products) {
+          const collectionProducts = data.data.collection.products.edges.map(edge => ({
+            collectionId: collectionId,
+            collectionTitle: data.data.collection.title,
+            ...edge.node
+          }));
+          allProducts.push(...collectionProducts);
+        }
+      } catch (error) {
+        console.error(`Error fetching products from collection ${collectionId}:`, error);
+      }
+    }
+
+    // Fetch product status data for filtering
+    const productStatusData = await fetchProductStatus();
+    
+    // Apply product status filtering
+    const filteredProducts = filterProductsByStatus(allProducts, productStatusData);
+    
+    console.log('All products from xAxisCollections (after filtering):', filteredProducts);
+    return filteredProducts;
+  }
+
+    // Function to determine parent-child relationship between X-axis and Y-axis collections
+  function getRelatedYAxisCollections(xAxisCollection, allYAxisCollections) {
+    // Simple order-based mapping: first X-axis collection maps to first Y-axis collection
+    // X-axis: [bags, t-shirts] -> Y-axis: [gucci, levis]
+    // Mapping: bags -> gucci, t-shirts -> levis
+    
+    const relatedCollections = [];
+    
+    // Validate inputs
+    if (!xAxisCollection || !xAxisCollection.id || !Array.isArray(allYAxisCollections)) {
+      console.warn('Invalid inputs to getRelatedYAxisCollections:', { xAxisCollection, allYAxisCollections });
+      return relatedCollections;
+    }
+    
+    // If Y-axis collections is empty, return empty array (this triggers variants mode)
+    if (allYAxisCollections.length === 0) {
+      console.log('Y-axis collections is empty, returning empty array to trigger variants mode');
+      return relatedCollections;
+    }
+    
+    // Find the index of the current X-axis collection in the xAxisCollections array
+    const xAxisIndex = xAxisCollections.findIndex(collection => 
+      collection && collection.id && xAxisCollection && xAxisCollection.id && 
+      collection.id === xAxisCollection.id
+    );
+    
+    console.log('Current X-axis collection:', xAxisCollection.title, 'at index:', xAxisIndex);
+    console.log('Available Y-axis collections:', allYAxisCollections.map(c => c.title || 'unknown'));
+    
+    // If X-axis collection is found, get the corresponding Y-axis collection by index
+    if (xAxisIndex !== -1 && xAxisIndex < allYAxisCollections.length) {
+      const relatedYAxisCollection = allYAxisCollections[xAxisIndex];
+      if (relatedYAxisCollection && relatedYAxisCollection.title) {
+        console.log('Found related Y-axis collection:', relatedYAxisCollection.title);
+        relatedCollections.push(relatedYAxisCollection);
+      } else {
+        console.warn('Related Y-axis collection is invalid:', relatedYAxisCollection);
+      }
+    } else {
+      console.log('No matching Y-axis collection found for index:', xAxisIndex);
+    }
+    
+    return relatedCollections;
+  }
+
+  // Function to update Y-axis products when X-axis collection changes
+  async function updateYAxisProductsForXAxisCollection(xAxisCollection) {
+    if (!xAxisCollection) {
+      console.log('No X-axis collection available');
+      return;
+    }
+
+    console.log('Updating Y-axis products for X-axis collection:', xAxisCollection.title);
+    
+    // Check if Y-axis collections is empty/null (which includes variation mode)
+    const hasYAxisCollections = yAxisCollections && Array.isArray(yAxisCollections) && yAxisCollections.length > 0;
+    
+    if (!hasYAxisCollections) {
+      console.log('Y-axis collections is empty/null or contains variations, showing variants of X-axis collection');
+      
+      // Get products from the current X-axis collection and show their variants
+      const xAxisCollectionId = xAxisCollection && xAxisCollection.id ? 
+        xAxisCollection.id.match(/gid:\/\/shopify\/Collection\/(.+)/)?.[1] : null;
+      
+      if (xAxisCollectionId) {
+        try {
+          const query = `query GetCollectionProducts($handle: String!) {
+            collection(handle: $handle) {
+              id
+              title
+              handle
+              products(first: 100) {
+                edges {
+                  node {
+                    id
+                    title
+                    handle
+                    featuredImage { url altText }
+                    variants(first: 50) {
+                      edges {
+                        node {
+                          id
+                          title
+                          image { url altText }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }`;
+
+          const response = await fetch(SHOPIFY_STOREFRONT_API, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shopify-Storefront-Access-Token': STOREFRONT_TOKEN,
+            },
+            body: JSON.stringify({ 
+              query, 
+              variables: { handle: xAxisCollectionId } 
+            }),
+          });
+
+          const data = await response.json();
+          console.log(`Products from X-axis collection ${xAxisCollectionId}:`, data);
+
+          if (data.data && data.data.collection && data.data.collection.products) {
+            // Fetch product status data for filtering
+            const productStatusData = await fetchProductStatus();
+            
+            // Get products and apply filtering
+            let xAxisProducts = data.data.collection.products.edges.map(edge => ({
+              collectionId: xAxisCollectionId,
+              collectionTitle: data.data.collection.title,
+              ...edge.node
+            }));
+            
+            // Apply product status filtering
+            const filteredXAxisProducts = filterProductsByStatus(xAxisProducts, productStatusData);
+            
+            // Convert to variants format for Y-axis
+            yAxisProducts = filteredXAxisProducts.map(product => ({
+              name: product.title,
+              images: [
+                ...(product.featuredImage && product.featuredImage.url ? [product.featuredImage.url] : []),
+                ...((product.variants && product.variants.edges) ? product.variants.edges.map(v => v.node.image && v.node.image.url ? v.node.image.url : null).filter(Boolean) : [])
+              ],
+              variants: (product.variants && product.variants.edges) ? product.variants.edges.map(v => ({
+                id: v.node.id,
+                title: v.node.title,
+                image: v.node.image && v.node.image.url ? v.node.image.url : null
+              })) : []
+            }));
+            
+            console.log('Updated Y-axis products (variants) for', xAxisCollection.title, ':', yAxisProducts);
+            renderCarousels();
+            return;
+          }
+        } catch (error) {
+          console.error(`Error fetching products from X-axis collection ${xAxisCollectionId}:`, error);
+        }
+      }
+      
+      // If we can't get variants, clear Y-axis products
+      yAxisProducts = [];
+      renderCarousels();
+      return;
+    }
+
+    // Original logic for Y-axis collections
+    const relatedYAxisCollections = getRelatedYAxisCollections(xAxisCollection, yAxisCollections);
+
+    console.log('Related Y-axis collections for', xAxisCollection.title, ':', relatedYAxisCollections);
+
+    if (relatedYAxisCollections.length === 0) {
+      console.log('No related Y-axis collections found for:', xAxisCollection.title);
+      // Clear Y-axis products if no related collections found
+      yAxisProducts = [];
+      renderCarousels();
+      return;
+    }
+
+    // Extract collection IDs from related Y-axis collections
+    const yAxisCollectionIds = relatedYAxisCollections.map(collection => {
+      if (!collection || !collection.id) {
+        console.warn('Y-axis collection missing ID:', collection);
+        return null;
+      }
+      const idMatch = collection.id.match(/gid:\/\/shopify\/Collection\/(.+)/);
+      return idMatch ? idMatch[1] : null;
+    }).filter(Boolean);
+
+    console.log('Fetching products from Y-axis collection IDs:', yAxisCollectionIds);
+
+    // Fetch products from related Y-axis collections
+    const yAxisProductsData = await fetchYAxisCollectionProducts(yAxisCollectionIds);
+    
+    // Convert to the format expected by the carousel
+    yAxisProducts = yAxisProductsData.map(product => ({
+      name: product.title,
+      images: [
+        ...(product.featuredImage && product.featuredImage.url ? [product.featuredImage.url] : []),
+        ...((product.variants && product.variants.edges) ? product.variants.edges.map(v => v.node.image && v.node.image.url ? v.node.image.url : null).filter(Boolean) : [])
+      ],
+      variants: (product.variants && product.variants.edges) ? product.variants.edges.map(v => ({
+        id: v.node.id,
+        title: v.node.title,
+        image: v.node.image && v.node.image.url ? v.node.image.url : null
+      })) : []
+    }));
+
+    console.log('Updated Y-axis products for', xAxisCollection.title, ':', yAxisProducts);
+    renderCarousels();
+  }
+
+  // Fetch product status from public API endpoint
+  async function fetchProductStatus() {
+    try {
+      const shop = window.Shopify && window.Shopify.shop ? window.Shopify.shop : window.location.hostname;
+      const response = await fetch(`https://shopify-management-app.vercel.app/api/public/product-status?shop=1cb12f-54.myshopify.com`);
+      const data = await response.json();
+      console.log('DATABASE product status API response:', data);
+      return data;
+    } catch (error) {
+      console.error('DATABASE product status API fetch error:', error);
+      return null;
+    }
+  }
+
+  // Filter products based on product status (remove inactive products)
+  function filterProductsByStatus(productsToFilter, productStatusData) {
+    if (!productStatusData || !productStatusData.success || !productStatusData.data || !productStatusData.data.statuses) {
+      console.log('No product status data available, returning unfiltered products');
+      return productsToFilter;
+    }
+
+    const inactiveProductIds = productStatusData.data.statuses
+      .filter(status => !status.isActive)
+      .map(status => status.productId);
+
+    console.log('Inactive product IDs from status API:', inactiveProductIds);
+
+    if (inactiveProductIds.length === 0) {
+      console.log('No inactive products found, returning all products');
+      return productsToFilter;
+    }
+
+    // Filter out inactive products
+    const filteredProducts = productsToFilter.filter(product => {
+      // Extract product ID from the product object
+      // Product ID format might be different depending on the source
+      let productId = null;
+      
+      if (product.id) {
+        // Extract ID from gid format: "gid://shopify/Product/1234567890" -> "1234567890"
+        const idMatch = product.id.match(/gid:\/\/shopify\/Product\/(\d+)/);
+        productId = idMatch ? idMatch[1] : product.id;
+      } else if (product.productId) {
+        productId = product.productId;
+      }
+
+      if (!productId) {
+        console.log('Could not extract product ID for product:', product);
+        return true; // Keep product if we can't determine its ID
+      }
+
+      const isActive = !inactiveProductIds.includes(productId);
+      if (!isActive) {
+        console.log(`Filtering out inactive product: ${product.name || product.title} (ID: ${productId})`);
+      }
+      return isActive;
+    });
+
+    console.log(`Filtered products: ${filteredProducts.length}/${productsToFilter.length} products remaining after status filtering`);
+    return filteredProducts;
+  }
+
+  // Main initialization function
+  async function waitForCarouselAndInit() {
+    showLoading();
+    if (!STOREFRONT_TOKEN) {
+      const carouselVertical = document.querySelector('.carousel-vertical');
+      if (carouselVertical) carouselVertical.innerHTML = '<div style="color:red;">Failed to load products: missing Storefront API token</div>';
+      return;
+    }
+    
+    // Fetch public settings and product status data
+    const [publicSettings, productStatusData] = await Promise.all([
+      fetchPublicSettings(),
+      fetchProductStatus()
+    ]);
+    
+    let usedXAxisCollections = null;
+    let usedYAxisCollections = null;
+    let yAxisType = null; // Track the Y-axis type
+    
+    if (publicSettings && publicSettings.success && publicSettings.data) {
+      if (Array.isArray(publicSettings.data.xAxisCollections) && publicSettings.data.xAxisCollections.length > 0) {
+        usedXAxisCollections = publicSettings.data.xAxisCollections;
+        console.log('[SpinningTool] xAxisCollections found in publicSettings:', usedXAxisCollections);
+      }
+      
+      // Check Y-axis type from settings
+      if (publicSettings.data.yAxis === 'variation') {
+        yAxisType = 'variation';
+        console.log('[SpinningTool] Y-axis type is "variation"');
+      } else if (Array.isArray(publicSettings.data.yAxisCollections) && publicSettings.data.yAxisCollections.length > 0) {
+        usedYAxisCollections = publicSettings.data.yAxisCollections;
+        console.log('[SpinningTool] yAxisCollections found in publicSettings:', usedYAxisCollections);
+      }
+    }
+    
+    // Check if we have both X-axis and Y-axis collections (hierarchical mode)
+    if (usedXAxisCollections && usedYAxisCollections) {
+      console.log('[SpinningTool] Both X-axis and Y-axis collections found, using hierarchical mode.');
+      
+      // Extract collection IDs
+      const xAxisCollectionIds = usedXAxisCollections.map(collection => {
+        if (!collection || !collection.id) {
+          console.warn('Collection missing ID:', collection);
+          return null;
+        }
+        const idMatch = collection.id.match(/gid:\/\/shopify\/Collection\/(.+)/);
+        return idMatch ? idMatch[1] : null;
+      }).filter(Boolean);
+      
+      const yAxisCollectionIds = usedYAxisCollections.map(collection => {
+        if (!collection || !collection.id) {
+          console.warn('Collection missing ID:', collection);
+          return null;
+        }
+        const idMatch = collection.id.match(/gid:\/\/shopify\/Collection\/(.+)/);
+        return idMatch ? idMatch[1] : null;
+      }).filter(Boolean);
+      
+      // Fetch X-axis collections (parent collections)
+      xAxisCollections = await fetchXAxisCollections(xAxisCollectionIds);
+      console.log('[SpinningTool] X-axis collections loaded:', xAxisCollections);
+      
+      // Store Y-axis collection IDs for later use
+      yAxisCollections = usedYAxisCollections;
+      console.log('[SpinningTool] Y-axis collections stored:', yAxisCollections);
+      
+      if (xAxisCollections.length > 0) {
+        afterProductsLoaded();
+      } else {
+        console.log('[SpinningTool] No X-axis collections loaded, falling back to default logic.');
+        fetchProducts();
+      }
+    } else if (usedXAxisCollections && (!usedYAxisCollections || yAxisType === 'variation')) {
+      // Legacy mode: only X-axis collections (treat as products) - this includes variation mode
+      console.log('[SpinningTool] Only X-axis collections found or Y-axis is variation, using legacy mode.');
+      
+      // Filter out collections without IDs
+      const validXAxisCollections = usedXAxisCollections.filter(collection => {
+        if (!collection || !collection.id) {
+          console.warn('Filtering out collection without ID:', collection);
+          return false;
+        }
+        return true;
+      });
+      
+      const xAxisProducts = await fetchXAxisCollectionProducts(validXAxisCollections);
+      console.log('[SpinningTool] Products fetched for xAxisCollections:', xAxisProducts);
+      if (Array.isArray(xAxisProducts) && xAxisProducts.length > 0) {
+        // Apply product status filtering
+        const filteredXAxisProducts = filterProductsByStatus(xAxisProducts, productStatusData);
+        
+        products = filteredXAxisProducts.map(product => ({
+          name: product.title,
+          images: [
+            ...(product.featuredImage && product.featuredImage.url ? [product.featuredImage.url] : []),
+            ...((product.variants && product.variants.edges) ? product.variants.edges.map(v => v.node.image && v.node.image.url ? v.node.image.url : null).filter(Boolean) : [])
+          ],
+          variants: (product.variants && product.variants.edges) ? product.variants.edges.map(v => ({
+            id: v.node.id,
+            title: v.node.title,
+            image: v.node.image && v.node.image.url ? v.node.image.url : null
+          })) : []
+        }));
+        console.log('[SpinningTool] Final products array set from xAxisCollections:', products);
+        afterProductsLoaded();
+      } else {
+        console.log('[SpinningTool] No products found for xAxisCollections, falling back to default logic.');
+        fetchProducts();
+      }
+    } else {
+      // Default logic: fetch all products
+      console.log('[SpinningTool] No collections found, using default logic.');
+      const selection = await fetchSpinningSelection();
+      if (selection && Array.isArray(selection.collectionIds) && selection.collectionIds.length > 0) {
+        await fetchProductsForLayer(selection.collectionIds);
+      } else {
+        fetchProducts();
+      }
+    }
+    fetchMenuAndFormat();
+    attachListenersWhenReady();
+    const observer = new MutationObserver(() => {
+      attachListenersWhenReady();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', waitForCarouselAndInit);
+  } else {
+    waitForCarouselAndInit();
+  }
+</script>
 
 {% schema %}
 {
-  "name": "Dummy Product Table",
+  "name": "spinning tool",
   "target": "section",
   "settings": []
 }

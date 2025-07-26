@@ -3,34 +3,25 @@
 client_id = "409fae5eb0b8ceed9fe70a694e896e0a"
 name = "partner-app-demo"
 handle = "partner-app-demo"
-application_url = "https://median-blues-ferrari-wallpapers.trycloudflare.com"
+application_url = "https://functions-pension-mostly-bridges.trycloudflare.com"
 embedded = true
 
-[build]
-include_config_on_deploy = true
-automatically_update_urls_on_dev = true
-
 [webhooks]
-api_version = "2025-04"
+api_version = "2024-04"
 
   [[webhooks.subscriptions]]
   topics = [ "app/uninstalled" ]
   uri = "/webhooks/app/uninstalled"
 
-  [[webhooks.subscriptions]]
-  topics = [ "app/scopes_update" ]
-  uri = "/webhooks/app/scopes_update"
-
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_products,write_products"
+scopes = "read_products,write_products, read_metafields, write_metafields"
 
 [auth]
-redirect_urls = [
-  "https://median-blues-ferrari-wallpapers.trycloudflare.com/auth/callback",
-  "https://median-blues-ferrari-wallpapers.trycloudflare.com/auth/shopify/callback",
-  "https://median-blues-ferrari-wallpapers.trycloudflare.com/api/auth/callback"
-]
+redirect_urls = ["https://functions-pension-mostly-bridges.trycloudflare.com/auth/callback", "https://functions-pension-mostly-bridges.trycloudflare.com/auth/shopify/callback", "https://functions-pension-mostly-bridges.trycloudflare.com/api/auth/callback"]
 
 [pos]
 embedded = false
+
+[build]
+automatically_update_urls_on_dev = true
