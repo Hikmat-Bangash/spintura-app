@@ -3,7 +3,7 @@
 client_id = "5857d5277c04df444e57a7c2c3c02568"
 name = "spintura-spinswipe"
 handle = "spintura-spinswipe"
-application_url = "https://query-divisions-lean-toolkit.trycloudflare.com"
+application_url = "https://rough-falls-amy-proposal.trycloudflare.com"
 embedded = true
 
 [webhooks]
@@ -26,11 +26,10 @@ api_version = "2024-04"
 scopes = "read_products, write_products"
 
 [auth]
-redirect_urls = ["https://query-divisions-lean-toolkit.trycloudflare.com/auth/callback", "https://query-divisions-lean-toolkit.trycloudflare.com/auth/shopify/callback", "https://query-divisions-lean-toolkit.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://rough-falls-amy-proposal.trycloudflare.com/auth/callback", "https://rough-falls-amy-proposal.trycloudflare.com/auth/shopify/callback", "https://rough-falls-amy-proposal.trycloudflare.com/api/auth/callback", "https://shopify-management-app.vercel.app/api/callback"]
 
 [pos]
 embedded = false
 
 [build]
 automatically_update_urls_on_dev = true
-include_config_on_deploy = true

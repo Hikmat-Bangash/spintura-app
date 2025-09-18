@@ -1,10 +1,4 @@
 {
-  "ratings": {
-    "stars": {
-      "label": "Ratings"
-    },
-    "home": {
-      "recommendationText": "Recommended Product!"
-    }
-  }
+  "name": "Dummy Table",
+  "description": "A dummy table extension for testing purposes"
 }
