@@ -2,6 +2,7 @@ api_version = "2025-04"
 [[extensions]]
 name = "Spin Swipe Custom Fields"
 handle = "spinswipe-custom-fields"
+uid = "b02043ac-0af0-1423-f91f-86e822ea2ee77bc0da85"
 type = "ui_extension"
 
 
