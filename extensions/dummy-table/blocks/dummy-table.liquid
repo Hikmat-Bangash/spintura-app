@@ -1,5 +1,260 @@
 {{ 'style.css' | asset_url | stylesheet_tag }}
 
+<!-- Mobile App Design -->
+<div class="mobile-app-container" id="mobile-app-container">
+  <!-- Header Section -->
+  <div class="mobile-header">
+    <button class="back-button" onclick="goBack()">← Back</button>
+    <div class="app-title">Kelly's Kapsule</div>
+    <button class="notification-bell" onclick="showNotifications()">🔔</button>
+  </div>
+
+  <!-- Real Hierarchical Carousel -->
+  <div class="hierarchical-carousel-wrapper mobile-carousel-wrapper" id="mobile-hierarchical-carousel">
+    <div class="carousel-level level-1" id="mobile-level-1-carousel">
+      <div class="carousel-items" id="mobile-level-1-items"></div>
+    </div>
+    <div class="carousel-level level-2" id="mobile-level-2-carousel" style="display: none;">
+      <div class="carousel-items" id="mobile-level-2-items"></div>
+    </div>
+    <div class="carousel-level level-3" id="mobile-level-3-carousel" style="display: none;">
+      <div class="carousel-items" id="mobile-level-3-items"></div>
+    </div>
+  </div>
+
+  <!-- Filter Buttons -->
+  <div class="filter-section">
+    <button class="filter-button active" onclick="setFilter('all')">
+      <span class="filter-icon">All</span>
+    </button>
+    <button class="filter-button" onclick="setFilter('men')">
+      <img src="{{ 'men-icon.png' | asset_url }}" alt="Men" class="filter-icon-img" width="20" height="20">
+      <span class="filter-text">Men</span>
+    </button>
+    <button class="filter-button" onclick="setFilter('women')">
+      <img src="{{ 'girl-icon.png' | asset_url }}" alt="Women" class="filter-icon-img" width="20" height="20">
+      <span class="filter-text">Women</span>
+    </button>
+    <button class="filter-button" onclick="setFilter('kids')">
+      <img src="{{ 'kids-icon.png' | asset_url }}" alt="Kids" class="filter-icon-img" width="20" height="20">
+      <span class="filter-text">Kids</span>
+    </button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-container">
+      <img src="{{ 'search-icon.png' | asset_url }}" alt="Search" class="search-icon-img" width="20" height="20">
+      <input type="text" class="search-input" placeholder="Search" id="search-input">
+      <img src="{{ 'filter-icon.png' | asset_url }}" alt="Filter" class="filter-icon-img" width="20" height="20" onclick="showFilters()">
+    </div>
+  </div>
+
+  <!-- Main Product Display -->
+  <div class="main-product-section">
+    <div class="product-controls">
+      <div class="control-buttons-left">
+        <button class="control-button" onclick="showGallery()">
+          <img src="{{ 'gallery.png' | asset_url }}" alt="Gallery" class="control-icon" width="24" height="24">
+        </button>
+        <button class="control-button" onclick="refreshView()">
+          <img src="{{ 'flipping.png' | asset_url }}" alt="Refresh" class="control-icon" width="24" height="24">
+        </button>
+        <button class="control-button" onclick="toggleLike()">
+          <img src="{{ 'finger.png' | asset_url }}" alt="Like" class="control-icon" width="24" height="24">
+        </button>
+      </div>
+      <div class="toggle-switch" onclick="toggleTheme()">
+        <img src="{{ 'light.svg' | asset_url }}" alt="Light Mode" class="toggle-icon light-icon" width="16" height="16">
+        <img src="{{ 'dark.svg' | asset_url }}" alt="Dark Mode" class="toggle-icon dark-icon" width="16" height="16">
+      </div>
+    </div>
+
+    <!-- Spinning Tool Display -->
+    <div class="mobile-spinning-tool-container">
+      <!-- Use the original spinning tool wrapper -->
+      <div class="wrapper w-full h-full flex flex-col gap-9 justify-center items-center" id="mobile-spinning-tool-wrapper" style="position: relative;">
+        <div class="carousel-container" id="mobile-spinning-tool-carousel" style="position: relative; width: 400px; height: 400px; perspective: 1000px;">
+          <div class="carousel carousel-vertical mobile-carousel-vertical" style="width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;"></div>
+          <div class="carousel carousel-horizontal mobile-carousel-horizontal" style="width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Detail Section -->
+  <div class="product-detail-section" id="product-detail-section" style="display: none;">
+    <!-- Main Product Image -->
+    <div class="main-product-image-container">
+      <img src="{{ 'cart.png' | asset_url }}" alt="Main Product" class="main-product-img" id="main-product-img" width="300" height="300">
+    </div>
+    
+    <!-- Product Variants Thumbnails -->
+    <div class="product-variants">
+      <div class="variant-thumbnail active" onclick="selectVariant(0)">
+        <img src="{{ 'cart.png' | asset_url }}" alt="Gold Watch" class="variant-img" width="60" height="60">
+      </div>
+      <div class="variant-thumbnail" onclick="selectVariant(1)">
+        <img src="{{ 'home.png' | asset_url }}" alt="Silver Watch" class="variant-img" width="60" height="60">
+      </div>
+      <div class="variant-thumbnail" onclick="selectVariant(2)">
+        <img src="{{ 'profile.png' | asset_url }}" alt="Rose Gold Watch" class="variant-img" width="60" height="60">
+      </div>
+      <div class="variant-thumbnail" onclick="selectVariant(3)">
+        <img src="{{ 'setting.png' | asset_url }}" alt="Black Watch" class="variant-img" width="60" height="60">
+      </div>
+    </div>
+
+    <!-- Product Information -->
+    <div class="product-info-section">
+      <div class="product-title-row">
+        <h2 class="product-title">Men's silver analog metal watch</h2>
+        <button class="wishlist-button" onclick="toggleWishlist()">
+          <span class="wishlist-icon">♡</span>
+        </button>
+      </div>
+      
+      <div class="price-section">
+        <span class="current-price">$80.00</span>
+        <span class="original-price">$90.00</span>
+        <span class="save-badge">SAVE 11%</span>
+      </div>
+      
+      <div class="product-description">
+        <p>Cheer on your favorite red and white team in eye-popping style with these red & white striped game bib overalls! Each pair is made of 100 percent cotton for a comfortable, breathable fit regardless of the weather and includes...</p>
+      </div>
+      
+      <div class="product-features">
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <span class="feature-text">Water Resistant</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">💎</div>
+          <span class="feature-text">Crystal Glass</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚖️</div>
+          <span class="feature-text">124 Gram</span>
+        </div>
+      </div>
+      
+      <div class="quantity-section">
+        <div class="quantity-selector">
+          <button class="quantity-btn minus-btn" onclick="decreaseQuantity()">-</button>
+          <span class="quantity-value" id="quantity-value">1</span>
+          <button class="quantity-btn plus-btn" onclick="increaseQuantity()">+</button>
+        </div>
+        <button class="add-to-cart-btn" onclick="addToCart()">ADD TO CART</button>
+      </div>
+      
+      <button class="buy-now-btn" onclick="buyNow()">BUY IT NOW</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-navigation">
+    <button class="nav-button active" onclick="navigateTo('home')">
+      <img src="{{ 'home.png' | asset_url }}" alt="Home" class="nav-icon-img" width="24" height="24">
+      <span class="nav-text">Home</span>
+    </button>
+    <button class="nav-button" onclick="navigateTo('cart')">
+      <img src="{{ 'cart-icon.svg' | asset_url }}" alt="Cart" class="nav-icon-img" width="24" height="24">
+      <span class="nav-text">Cart</span>
+    </button>
+    <button class="nav-button" onclick="navigateTo('wishlist')">
+      <div class="nav-icon-container">
+        <img src="{{ 'wishlist-icon.svg' | asset_url }}" alt="Wishlist" class="nav-icon-img" width="24" height="24">
+        <span class="wishlist-badge" id="wishlist-badge">0</span>
+      </div>
+      <span class="nav-text">Wishlist</span>
+    </button>
+  </div>
+</div>
+
+<!-- Product Gallery Modal -->
+<div id="product-gallery-modal" class="product-gallery-modal">
+  <div class="gallery-modal-content">
+    <div class="gallery-header">
+      <button class="gallery-back-button" onclick="closeGallery()">← Back</button>
+      <h3 class="gallery-title">Product Gallery</h3>
+      <button class="gallery-close-button" onclick="closeGallery()">✕</button>
+    </div>
+    
+    <div class="gallery-main-image-container">
+      <img src="{{ 'cart.png' | asset_url }}" alt="Gallery Main Image" class="gallery-main-img" id="gallery-main-img" width="400" height="400">
+    </div>
+    
+    <div class="gallery-thumbnails">
+      <div class="gallery-thumbnail active" onclick="selectGalleryImage(0)">
+        <img src="{{ 'cart.png' | asset_url }}" alt="Gold Watch" class="gallery-thumb-img" width="80" height="80">
+      </div>
+      <div class="gallery-thumbnail" onclick="selectGalleryImage(1)">
+        <img src="{{ 'home.png' | asset_url }}" alt="Silver Watch" class="gallery-thumb-img" width="80" height="80">
+      </div>
+      <div class="gallery-thumbnail" onclick="selectGalleryImage(2)">
+        <img src="{{ 'profile.png' | asset_url }}" alt="Rose Gold Watch" class="gallery-thumb-img" width="80" height="80">
+      </div>
+      <div class="gallery-thumbnail" onclick="selectGalleryImage(3)">
+        <img src="{{ 'setting.png' | asset_url }}" alt="Black Watch" class="gallery-thumb-img" width="80" height="80">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Product Detail Modal (Heart Icon) -->
+<div id="product-detail-modal" class="product-detail-modal">
+  <div class="detail-modal-content">
+    <div class="detail-modal-header">
+      <button class="detail-close-button" onclick="closeDetailModal()">✕</button>
+    </div>
+    
+    <div class="detail-main-image-container">
+      <img src="{{ 'cart.png' | asset_url }}" alt="Detail Main Image" class="detail-main-img" id="detail-main-img" width="300" height="300">
+    </div>
+    
+    <!-- Bottom 4 Buttons -->
+    <div class="detail-bottom-buttons">
+      <button class="detail-action-btn active" onclick="selectActionButton(0, 'shop')">
+        <img src="{{ 'shopicon.svg' | asset_url }}" alt="Shop" class="detail-btn-icon" width="24" height="24">
+      </button>
+      <button class="detail-action-btn" onclick="selectActionButton(1, 'bookmark')">
+        <img src="{{ 'bookmark.svg' | asset_url }}" alt="Bookmark" class="detail-btn-icon" width="24" height="24">
+      </button>
+      <button class="detail-action-btn" onclick="selectActionButton(2, 'share')">
+        <img src="{{ 'share.svg' | asset_url }}" alt="Share" class="detail-btn-icon" width="24" height="24">
+      </button>
+      <button class="detail-action-btn" onclick="selectActionButton(3, 'add-to-cart')">
+        <img src="{{ 'add-to-cart.svg' | asset_url }}" alt="Add to Cart" class="detail-btn-icon" width="24" height="24">
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Wishlist Modal -->
+<div id="wishlist-modal" class="wishlist-modal">
+  <div class="wishlist-modal-content">
+    <div class="wishlist-modal-header">
+      <h2 class="wishlist-title">Your Wishlist</h2>
+      <button class="wishlist-close-button" onclick="closeWishlistModal()">✕</button>
+    </div>
+    
+    <div class="wishlist-content">
+      <div class="wishlist-empty-state">
+        <div class="empty-wishlist-icon">♡</div>
+        <h3>Your wishlist is empty</h3>
+        <p>Start adding items you love to your wishlist!</p>
+        <button class="start-shopping-btn" onclick="closeWishlistModal()">Start Shopping</button>
+      </div>
+      
+      <div class="wishlist-items" id="wishlist-items" style="display: none;">
+        <!-- Wishlist items will be populated here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Original Desktop Design -->
 <div class="hierarchical-carousel-wrapper" id="hierarchical-carousel">
   <div class="breadcrumb-nav" id="breadcrumb-nav">
     <span class="breadcrumb-item active" data-level="1">Top Layer</span>
@@ -13,18 +268,20 @@
 <div class="carousel-level level-3" id="level-3-carousel" style="display: none;">
   <div class="carousel-items" id="level-3-items"></div>
 </div>
-</div>
-<div class="wrapper w-full h-full flex flex-col gap-9 justify-center items-center" id="spinning-tool-wrapper" style="position: relative;"> <div
+
+<!-- Desktop Spinning Tool -->
+<div class="wrapper w-full h-full flex flex-col gap-9 justify-center items-center" id="desktop-spinning-tool-wrapper" style="position: relative;"> <div
 class="carousel-container"
-id="spinning-tool-carousel"
+id="desktop-spinning-tool-carousel"
 style="position: relative; width: 400px; height: 400px; perspective: 1000px;">
 <div
-  class="carousel carousel-vertical"
+  class="carousel carousel-vertical desktop-carousel-vertical"
   style="width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;">
 </div>
 <div
-  class="carousel carousel-horizontal"
+  class="carousel carousel-horizontal desktop-carousel-horizontal"
   style="width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2;">
+</div>
 </div>
 </div>
 
@@ -38,8 +295,8 @@ style="position: relative; width: 400px; height: 400px; perspective: 1000px;">
         <span class="cart-icon">🛒</span>
         Add to Cart
       </button>
-    </div>
   </div>
+</div>
 </div>
 </div>
 
@@ -51,9 +308,9 @@ style="position: relative; width: 400px; height: 400px; perspective: 1000px;">
       <source src="" type="video/mp4">
       Your browser does not support the video tag.
     </video>
-  </div>
-</div>
-</div>
+      </div>
+        </div>
+      </div>
 
 {% schema %}
 {

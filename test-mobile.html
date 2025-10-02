@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Spinning Tool Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .test-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .test-description {
+            margin-bottom: 15px;
+            color: #666;
+        }
+        
+        .device-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .device-button {
+            padding: 10px 20px;
+            border: 2px solid #007bff;
+            background: white;
+            color: #007bff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .device-button.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .device-button:hover {
+            background: #007bff;
+            color: white;
+        }
+        
+        .iframe-container {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        
+        .iframe-container.mobile {
+            width: 375px;
+            height: 667px;
+            margin: 0 auto;
+        }
+        
+        .iframe-container.desktop {
+            width: 100%;
+            height: 600px;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-section">
+            <div class="test-title">Mobile Spinning Tool Test</div>
+            <div class="test-description">
+                This test page allows you to preview the mobile spinning tool design. 
+                The mobile interface will be shown on screens 768px and below, while the desktop interface 
+                will be shown on larger screens.
+            </div>
+            
+            <div class="device-toggle">
+                <button class="device-button active" onclick="showMobile()">Mobile View (375px)</button>
+                <button class="device-button" onclick="showDesktop()">Desktop View (1200px)</button>
+            </div>
+            
+            <div class="iframe-container mobile" id="iframe-container">
+                <iframe src="extensions/dummy-table/blocks/dummy-table.liquid" id="test-iframe"></iframe>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">Features Implemented</div>
+            <div class="test-description">
+                ✅ Mobile-responsive design that switches based on screen size<br>
+                ✅ Header with back button, title, and notification bell<br>
+                ✅ Product categories carousel with horizontal scrolling<br>
+                ✅ Filter buttons (All, Men, Women, Kids)<br>
+                ✅ Search bar with magnifying glass and filter icon<br>
+                ✅ <strong>ORIGINAL SPINNING TOOL</strong> in mobile view (same as desktop)<br>
+                ✅ Original 400x400px dimensions preserved<br>
+                ✅ <strong>REAL HIERARCHICAL CAROUSEL</strong> with 3 levels (Collections → Products → Variants)<br>
+                ✅ No breadcrumbs - clean mobile interface<br>
+                ✅ Uses same data as desktop carousel<br>
+                ✅ Bottom navigation with Home, Cart, Profile, Settings<br>
+                ✅ Maintains existing spinning tool functionality on desktop<br>
+                ✅ Interactive elements with JavaScript functionality<br>
+                ✅ Transparent background for better mobile integration
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">Design Elements</div>
+            <div class="test-description">
+                🎨 Light yellow (#FFF8DC) header background<br>
+                🎨 Light gray (#949494) main product section<br>
+                🎨 Golden yellow (#DAAF37) bottom navigation<br>
+                🎨 Orange (#FFA500) accent colors for filters<br>
+                🎨 <strong>ORIGINAL SPINNING TOOL</strong> with exact same functionality<br>
+                🎨 Original 400x400px dimensions maintained<br>
+                🎨 Transparent background for seamless mobile integration<br>
+                🎨 Smooth animations and hover effects<br>
+                🎨 Mobile-first responsive design
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showMobile() {
+            const container = document.getElementById('iframe-container');
+            const buttons = document.querySelectorAll('.device-button');
+            
+            container.className = 'iframe-container mobile';
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        function showDesktop() {
+            const container = document.getElementById('iframe-container');
+            const buttons = document.querySelectorAll('.device-button');
+            
+            container.className = 'iframe-container desktop';
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
