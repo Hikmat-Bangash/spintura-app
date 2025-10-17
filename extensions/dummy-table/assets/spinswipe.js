@@ -4,11 +4,11 @@ const SHOP_DOMAIN = '1cb12f-54.myshopify.com';
 
 const STOREFRONT_TOKEN = '9460b0b6db23e5243a0dd946bd430609';
 
-const SHOPIFY_STOREFRONT_API = `https://${SHOP_DOMAIN}/api/2023-07/graphql.json`;
+const SHOPIFY_STOREFRONT_API = `https://${SHOP_DOMAIN}/api/2023-07/graphql.json`; 
 
 let products = [];
 
-let xAxisCollections = [];
+let xAxisCollections = []; 
 
 let yAxisCollections = [];
 
@@ -216,13 +216,63 @@ window.selectMobileThirdLevelCollection = selectMobileThirdLevelCollection;
 
 function toggleTheme() {
 
-  const toggleSwitch = document.querySelector('.toggle-switch');
+  // Get all toggle switches (both mobile and desktop)
+  const toggleSwitches = document.querySelectorAll('.toggle-switch');
 
-  if (toggleSwitch) {
+  if (toggleSwitches.length > 0) {
+    // Toggle all toggle switches to keep them in sync
+    toggleSwitches.forEach(toggleSwitch => {
+      toggleSwitch.classList.toggle('active');
+    });
 
-    toggleSwitch.classList.toggle('active');
+    const isDarkMode = toggleSwitches[0].classList.contains('active');
 
-    console.log('[MobileApp] 🎨 Theme toggled:', toggleSwitch.classList.contains('active') ? 'Dark Mode' : 'Light Mode');
+    // Apply dark mode class to body
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+      console.log('[Theme] 🎨 Theme toggled: Dark Mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+      console.log('[Theme] 🎨 Theme toggled: Light Mode');
+    }
+    
+    // Store theme preference in localStorage
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  }
+
+}
+
+// Load saved theme on page load
+
+function loadTheme() {
+
+  const savedTheme = localStorage.getItem('theme');
+
+  const toggleSwitches = document.querySelectorAll('.toggle-switch');
+
+  
+
+  if (savedTheme === 'dark') {
+
+    document.body.classList.add('dark-mode');
+
+    // Sync all toggle switches
+    toggleSwitches.forEach(toggleSwitch => {
+      toggleSwitch.classList.add('active');
+    });
+
+    console.log('[Theme] 🎨 Loaded theme: Dark Mode');
+
+  } else {
+
+    document.body.classList.remove('dark-mode');
+
+    // Sync all toggle switches
+    toggleSwitches.forEach(toggleSwitch => {
+      toggleSwitch.classList.remove('active');
+    });
+
+    console.log('[Theme] 🎨 Loaded theme: Light Mode (default)');
 
   }
 
@@ -288,7 +338,7 @@ window.testMobileCarousel = function() {
 
 function showLoading() {
 
-const isMobile = window.innerWidth <= 768;
+const isMobile = window.innerWidth < 668;
 const carouselVertical = isMobile ? document.querySelector('.mobile-carousel-vertical') : document.querySelector('.desktop-carousel-vertical');
 const carouselHorizontal = isMobile ? document.querySelector('.mobile-carousel-horizontal') : document.querySelector('.desktop-carousel-horizontal');
 if (carouselVertical) carouselVertical.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.2em;">Loading...</div>';
@@ -390,7 +440,7 @@ if (carouselContainer) {
   carouselContainer.style.maxHeight = '450px';
 
   // Apply responsive perspective based on screen width
-  const isSmallScreen = window.innerWidth < 400;
+  const isSmallScreen = window.innerWidth < 550;
   carouselContainer.style.perspective = isSmallScreen ? '800px' : '1000px';
 
   carouselContainer.style.transformStyle = 'preserve-3d';
@@ -696,7 +746,7 @@ const verticalCarousel = carouselContainer.querySelector('.carousel-vertical');
 const horizontalCarousel = carouselContainer.querySelector('.carousel-horizontal');
 
 // Apply responsive perspective based on screen width
-const isSmallScreen = window.innerWidth < 400;
+const isSmallScreen = window.innerWidth < 550;
 carouselContainer.style.perspective = isSmallScreen ? '800px' : '1000px';
 
 carouselContainer.style.transformStyle = 'preserve-3d';
@@ -718,10 +768,11 @@ if (verticalCarousel) {
     const rotateAngle = index * (360 / 5);
 
     // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 400 ? '135px' : '170px';
+    const translateZ = window.innerWidth < 550 ? '152px' : '170px'; 
     panel.style.transform = `rotateX(${rotateAngle}deg) translateZ(${translateZ})`;
 
-    panel.style.transformStyle = 'preserve-3d';
+    panel.style.transformStyle = 'preserve-3d'; 
+    applyIPhonePanelFixes(panel);
 
     panel.style.backfaceVisibility = 'hidden';
 
@@ -746,10 +797,11 @@ if (horizontalCarousel) {
     const rotateAngle = index * (360 / 5);
 
     // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 400 ? '135px' : '170px';
+    const translateZ = window.innerWidth < 550 ? '152px' : '170px';
     panel.style.transform = `rotateY(${rotateAngle}deg) translateZ(${translateZ})`;
 
     panel.style.transformStyle = 'preserve-3d';
+    applyIPhonePanelFixes(panel);
 
     panel.style.backfaceVisibility = 'hidden';
 
@@ -868,10 +920,12 @@ return result;
 }
 
 function renderCarousels() {
+  // Apply responsive carousel settings based on current viewport
+  applyResponsiveCarouselSettings();
 
-const isMobile = window.innerWidth <= 768;
-const carouselVertical = isMobile ? document.querySelector('.mobile-carousel-vertical') : document.querySelector('.desktop-carousel-vertical');
-const carouselHorizontal = isMobile ? document.querySelector('.mobile-carousel-horizontal') : document.querySelector('.desktop-carousel-horizontal');
+  const isMobile = window.innerWidth < 668;
+  const carouselVertical = isMobile ? document.querySelector('.mobile-carousel-vertical') : document.querySelector('.desktop-carousel-vertical');
+  const carouselHorizontal = isMobile ? document.querySelector('.mobile-carousel-horizontal') : document.querySelector('.desktop-carousel-horizontal');
 
 
 const hasXAxisCollections = xAxisCollections.length > 0;
@@ -930,9 +984,10 @@ if (hasXAxisCollections) {
 
     panel.className = 'carousel-panel';
 
-    // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 400 ? '135px' : '170px';
+    // Apply responsive translateZ based on screen width 
+    const translateZ = window.innerWidth < 550 ? '152px' : '170px';
     panel.style.transform = `rotateY(${rotateAngle}deg) translateZ(${translateZ})`;
+    applyIPhonePanelFixes(panel);
 
     
 
@@ -1037,7 +1092,7 @@ if (hasXAxisCollections) {
       panel.className = 'carousel-panel';
 
       // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 400 ? '135px' : '170px';
+    const translateZ = window.innerWidth < 550 ? '152px' : '170px';
     panel.style.transform = `rotateX(${rotateAngle}deg) translateZ(${translateZ})`;
 
       panel.innerHTML = `
@@ -1125,7 +1180,7 @@ if (hasXAxisCollections) {
     panel.className = 'carousel-panel';
 
     // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 400 ? '135px' : '170px';
+    const translateZ = window.innerWidth < 550 ? '152px' : '170px';
     panel.style.transform = `rotateX(${rotateAngle}deg) translateZ(${translateZ})`;
 
     panel.innerHTML = `
@@ -1169,7 +1224,7 @@ if (hasXAxisCollections) {
     panel.className = 'carousel-panel';
 
     // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 400 ? '135px' : '170px';
+    const translateZ = window.innerWidth < 550 ? '152px' : '170px';
     panel.style.transform = `rotateY(${rotateAngle}deg) translateZ(${translateZ})`;
 
     
@@ -1230,6 +1285,155 @@ attachListenersToPanels();
 
 attachListenersToVideoIcons();
 
+}
+
+// Apply responsive carousel settings based on current viewport with iPhone-specific fixes
+function applyResponsiveCarouselSettings() {
+  const isMobile = window.innerWidth < 668;
+  const isSmallScreen = window.innerWidth < 500;
+  const isExtraSmallScreen = window.innerWidth < 400;
+  
+  // Detect iPhone specifically
+  const isIPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+  
+  console.log(`[iPhone Fix] 🔍 Device detection - iPhone: ${isIPhone}, iOS: ${isIOS}, Safari: ${isSafari}`);
+  
+  // Get carousel containers
+  const carouselContainer = isMobile ? 
+    document.getElementById('mobile-spinning-tool-carousel') : 
+    document.getElementById('desktop-spinning-tool-carousel');
+  
+  if (carouselContainer) {
+    // Apply responsive perspective with iPhone-specific adjustments
+    let perspective;
+    if (isIPhone) {
+      // iPhone-specific perspective values for better 3D rendering (slightly reduced)
+      if (isExtraSmallScreen) {
+        perspective = '500px';
+      } else if (isSmallScreen) {
+        perspective = '700px';
+      } else {
+        perspective = '900px';
+      }
+    } else {
+      // Standard perspective for other devices
+      if (isExtraSmallScreen) {
+        perspective = '600px';
+      } else if (isSmallScreen) {
+        perspective = '800px';
+      } else {
+        perspective = '1000px';
+      }
+    }
+    
+    console.log(`[iPhone Fix] 📐 Applying perspective: ${perspective} for ${isIPhone ? 'iPhone' : 'other device'}`);
+    
+    carouselContainer.style.perspective = perspective;
+    carouselContainer.style.transformStyle = 'preserve-3d';
+    carouselContainer.style.maxHeight = isMobile ? '350px' : '450px';
+    
+    // iPhone-specific CSS fixes
+    if (isIPhone) {
+      carouselContainer.style.webkitPerspective = perspective;
+      applyIPhoneContainerFixes(carouselContainer);
+    }
+  }
+  
+  // Update translateZ values for all carousel panels with iPhone-specific adjustments
+  updateCarouselPanelTransforms();
+}
+
+// Apply iPhone-specific CSS fixes to a panel
+function applyIPhonePanelFixes(panel) {
+  const isIPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  
+  if (isIPhone) {
+    panel.style.webkitTransformStyle = 'preserve-3d';
+    panel.style.backfaceVisibility = 'hidden';
+    panel.style.webkitBackfaceVisibility = 'hidden';
+    panel.style.transformOrigin = 'center center';
+    panel.style.webkitTransformOrigin = 'center center';
+    panel.style.willChange = 'transform';
+    panel.style.webkitWillChange = 'transform';
+  }
+}
+
+// Force re-render for iPhone Safari to fix 3D rendering issues
+function forceIPhoneRerender() {
+  const isIPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  
+  if (isIPhone) {
+    console.log('[iPhone Fix] 🔄 Forcing re-render for iPhone Safari');
+    
+    // Force a reflow by temporarily changing a style property
+    const carouselContainer = document.getElementById('mobile-spinning-tool-carousel') || 
+                             document.getElementById('desktop-spinning-tool-carousel');
+    
+    if (carouselContainer) {
+      const originalTransform = carouselContainer.style.transform;
+      carouselContainer.style.transform = 'translateZ(0)';
+      
+      // Use requestAnimationFrame to ensure the change is applied
+      requestAnimationFrame(() => {
+        carouselContainer.style.transform = originalTransform;
+        console.log('[iPhone Fix] ✅ Re-render completed');
+      });
+    }
+  }
+}
+
+// Apply iPhone-specific CSS fixes to carousel containers
+function applyIPhoneContainerFixes(container) {
+  const isIPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  
+  if (isIPhone && container) {
+    container.style.webkitTransformStyle = 'preserve-3d';
+    container.style.backfaceVisibility = 'hidden';
+    container.style.webkitBackfaceVisibility = 'hidden';
+    container.style.transformOrigin = 'center center';
+    container.style.webkitTransformOrigin = 'center center';
+    container.style.willChange = 'transform';
+    container.style.webkitWillChange = 'transform';
+    
+    // Additional iPhone-specific fixes
+    container.style.position = 'relative';
+    container.style.overflow = 'visible';
+    
+    // Force re-render after applying fixes
+    setTimeout(() => {
+      forceIPhoneRerender();
+    }, 100);
+  }
+}
+
+// Update carousel panel transforms based on current viewport with iPhone fixes
+function updateCarouselPanelTransforms() {
+  const isExtraSmallScreen = window.innerWidth < 400;
+  const isSmallScreen = window.innerWidth < 500;
+  const translateZ = isExtraSmallScreen ? '100px' : (isSmallScreen ? '152px' : '170px');
+  const isIPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  
+  console.log(`[iPhone Fix] 🔄 Applying translateZ: ${translateZ} for ${isIPhone ? 'iPhone' : 'other device'}`);
+  
+  // Update horizontal carousel panels
+  const horizontalPanels = document.querySelectorAll('.carousel-horizontal .carousel-panel');
+  horizontalPanels.forEach((panel, index) => {
+    const rotateAngle = index * (360 / 5);
+    panel.style.transform = `rotateY(${rotateAngle}deg) translateZ(${translateZ})`;
+    panel.style.transformStyle = 'preserve-3d';
+    applyIPhonePanelFixes(panel);
+  });
+  
+  // Update vertical carousel panels
+  const verticalPanels = document.querySelectorAll('.carousel-vertical .carousel-panel');
+  verticalPanels.forEach((panel, index) => {
+    const rotateAngle = index * (360 / 5);
+    panel.style.transform = `rotateX(${rotateAngle}deg) translateZ(${translateZ})`;
+    panel.style.transformStyle = 'preserve-3d';
+    applyIPhonePanelFixes(panel);
+  });
 }
 
 function handleTouchStart(e) {
@@ -1508,7 +1712,7 @@ if (verticalSwipe && Math.abs(deltaY) > Math.abs(deltaX)) {
 
 }
 
-const isMobile = window.innerWidth <= 768;
+const isMobile = window.innerWidth < 668;
 const carouselHorizontal = isMobile ? document.querySelector('.mobile-carousel-horizontal') : document.querySelector('.desktop-carousel-horizontal');
 const carouselVertical = isMobile ? document.querySelector('.mobile-carousel-vertical') : document.querySelector('.desktop-carousel-vertical');
 if (carouselHorizontal) {
@@ -1547,7 +1751,7 @@ setTimeout(() => {
 
 function attachListenersWhenReady() {
 
-const isMobile = window.innerWidth <= 768;
+const isMobile = window.innerWidth < 668;
 const carouselContainer = isMobile ? document.getElementById('mobile-spinning-tool-carousel') : document.getElementById('desktop-spinning-tool-carousel');
 const wrapper = isMobile ? document.getElementById('mobile-spinning-tool-wrapper') : document.getElementById('desktop-spinning-tool-wrapper');
 
@@ -1826,27 +2030,15 @@ let currentProduct = null;
 
 if (products && products.length > 0) {
 
-  if (activeCarousel === 'horizontal') {
+  const totalProducts = products.length;
 
-    const totalProducts = products.length;
+  const normalizedHorizontalIndex = ((horizontalIndex % totalProducts) + totalProducts) % totalProducts;
 
-    const normalizedHorizontalIndex = ((horizontalIndex % totalProducts) + totalProducts) % totalProducts;
-
-    currentProduct = products[normalizedHorizontalIndex];
-
-  } else {
-
-    const totalProducts = products.length;
-
-    const normalizedVerticalIndex = ((verticalIndex % totalProducts) + totalProducts) % totalProducts;
-
-    currentProduct = products[normalizedVerticalIndex];
-
-  }
+  currentProduct = products[normalizedHorizontalIndex];
 
   
 
-  if (currentProduct) {
+  if (currentProduct) { 
 
     console.log('[SpinningTool] 🔍 Found product from main products array:', currentProduct);
 
@@ -1854,29 +2046,23 @@ if (products && products.length > 0) {
 
   } }
 
-if (activeCarousel === 'horizontal') {
+if (xAxisCollections.length > 0) {
 
-  if (xAxisCollections.length > 0) {
+  const totalXAxisCollections = xAxisCollections.length;
 
-    const totalXAxisCollections = xAxisCollections.length;
+  const normalizedHorizontalIndex = ((horizontalIndex % totalXAxisCollections) + totalXAxisCollections) % totalXAxisCollections;
 
-    const normalizedHorizontalIndex = ((horizontalIndex % totalXAxisCollections) + totalXAxisCollections) % totalXAxisCollections;
+  currentProduct = xAxisCollections[normalizedHorizontalIndex];
 
-    currentProduct = xAxisCollections[normalizedHorizontalIndex];
+} else if (yAxisProducts.length > 0) {
 
-  }
+  const totalYAxisProducts = yAxisProducts.length;
 
-} else {
+  const normalizedHorizontalIndex = ((horizontalIndex % totalYAxisProducts) + totalYAxisProducts) % totalYAxisProducts;
 
-  if (yAxisProducts.length > 0) {
+  currentProduct = yAxisProducts[normalizedHorizontalIndex];
 
-    const totalYAxisProducts = yAxisProducts.length;
-
-    const normalizedVerticalIndex = ((verticalIndex % totalYAxisProducts) + totalYAxisProducts) % totalYAxisProducts;
-
-    currentProduct = yAxisProducts[normalizedVerticalIndex];
-
-  } }
+}
 
 if (!currentProduct || !currentProduct.handle) {
 
@@ -1896,7 +2082,7 @@ if (!currentProduct || !currentProduct.handle) {
 
         if (level3Collection && level3Collection.resource) {
 
-          const productIndex = Math.abs(verticalIndex) % level3Collection.resource.length;
+          const productIndex = Math.abs(horizontalIndex) % level3Collection.resource.length;
 
           currentProduct = level3Collection.resource[productIndex];
 
@@ -2176,8 +2362,6 @@ if (modal && videoElement) {
 
   document.body.style.overflow = '';
 
-  
-
   console.log('[SpinningTool] ✅ Video modal closed');
 
 }
@@ -2271,7 +2455,7 @@ function showAddToCartSuccess(productName) {
     background: #4CAF50;
 
     color: white;
-
+ 
     padding: 16px 24px;
 
     border-radius: 8px;
@@ -2382,89 +2566,96 @@ async function addProductToCart(product) {
 
     
 
-    // Get the first available variant with proper ID extraction
-
+    // Always fetch the product from Shopify to get the most up-to-date variant information
     let variantId = null;
+
+    console.log('[Cart] 🔍 Fetching product from Shopify to get valid variants...');
 
     
 
-    if (product.variants && product.variants.length > 0) {
+    if (product.handle) {
 
-      // Extract numeric ID from Shopify variant ID (e.g., "gid://shopify/ProductVariant/123456" -> "123456")
+      try {
 
-      const variant = product.variants[0];
+        const productResponse = await fetch(`/products/${product.handle}.js`);
 
-      if (variant.id) {
+        if (productResponse.ok) {
 
-        const idMatch = variant.id.toString().match(/gid:\/\/shopify\/ProductVariant\/(\d+)/);
+          const shopifyProduct = await productResponse.json();
 
-        variantId = idMatch ? idMatch[1] : variant.id.toString();
+          console.log('[Cart] 📦 Fetched product from Shopify:', shopifyProduct);
 
-      }
+          
 
-    } else if (product.id) {
+          if (shopifyProduct.variants && shopifyProduct.variants.length > 0) {
 
-      // Extract numeric ID from product ID (e.g., "gid://shopify/Product/123456" -> "123456")
+            // Find the first available variant (in stock and available)
 
-      const idMatch = product.id.toString().match(/gid:\/\/shopify\/Product\/(\d+)/);
+            const availableVariant = shopifyProduct.variants.find(variant => 
 
-      variantId = idMatch ? idMatch[1] : product.id.toString();
+              variant.available && variant.inventory_quantity > 0
 
-    }
-
-
-
-    console.log('[Cart] 🔑 Extracted variant ID:', variantId);
-
-
-
-    if (!variantId) {
-
-      console.log('[Cart] ⚠️ No valid variant ID found, trying to fetch product from Shopify...');
-
-      
-
-      // Try to fetch the product directly from Shopify using the handle
-
-      if (product.handle) {
-
-        try {
-
-          const productResponse = await fetch(`/products/${product.handle}.js`);
-
-          if (productResponse.ok) {
-
-            const shopifyProduct = await productResponse.json();
-
-            console.log('[Cart] 📦 Fetched product from Shopify:', shopifyProduct);
+            ) || shopifyProduct.variants[0]; // Fallback to first variant if none are in stock
 
             
 
-            if (shopifyProduct.variants && shopifyProduct.variants.length > 0) {
+            if (availableVariant) {
 
-              variantId = shopifyProduct.variants[0].id.toString();
+              variantId = availableVariant.id.toString();
 
-              console.log('[Cart] 🔑 Using Shopify product variant ID:', variantId);
+              console.log('[Cart] 🔑 Using Shopify variant ID:', variantId, 'for variant:', availableVariant.title);
+
+              console.log('[Cart] 📊 Variant details:', {
+
+                id: variantId,
+
+                title: availableVariant.title,
+
+                available: availableVariant.available,
+
+                inventory_quantity: availableVariant.inventory_quantity,
+
+                price: availableVariant.price
+
+              });
+
+            } else {
+
+              throw new Error('No available variants found for this product');
 
             }
 
+          } else {
+
+            throw new Error('Product has no variants');
+
           }
 
-        } catch (fetchError) {
+        } else {
 
-          console.log('[Cart] ⚠️ Failed to fetch product from Shopify:', fetchError);
+          throw new Error(`Failed to fetch product: ${productResponse.status} ${productResponse.statusText}`);
 
         }
 
-      }
+      } catch (fetchError) {
 
-      
+        console.error('[Cart] ❌ Failed to fetch product from Shopify:', fetchError);
 
-      if (!variantId) {
-
-        throw new Error('No valid variant ID found for this product');
+        throw new Error(`Failed to fetch product data: ${fetchError.message}`);
 
       }
+
+    } else {
+
+      throw new Error('Product handle not found');
+
+    }
+
+    
+
+    if (!variantId) {
+
+      throw new Error('No valid variant ID found for this product');
 
     }
 
@@ -2682,8 +2873,6 @@ if (videoModalCloseBtn) {
 
 }
 
-
-
 const videoModal = document.getElementById('video-modal');
 
 if (videoModal) {
@@ -2740,6 +2929,20 @@ const query = `{
 
         handle
 
+        descriptionHtml
+
+        productType
+
+        tags
+
+        priceRange {
+
+          minVariantPrice { amount currencyCode }
+
+          maxVariantPrice { amount currencyCode }
+
+        }
+
         featuredImage { url altText }
 
         media(first: 50) {
@@ -2773,13 +2976,17 @@ const query = `{
         variants(first: 50) {
 
           edges {
-
             node {
-
               id
-
               title
-
+              price { amount currencyCode }
+              compareAtPrice { amount currencyCode }
+              availableForSale
+              sku
+              weight
+              weightUnit
+              barcode
+              selectedOptions { name value }
               image { url altText }
 
             }
@@ -2815,6 +3022,10 @@ try {
   });
 
   const data = await res.json();
+
+  console.log('[fetchProducts] 📦 Raw Shopify API Response:', data);
+  console.log('[fetchProducts] 📊 Products Data:', data.data?.products);
+  console.log('[fetchProducts] 🔢 Total Products Found:', data.data?.products?.edges?.length || 0);
 
   const productStatusData = await fetchProductStatus();
 
@@ -2890,6 +3101,14 @@ try {
 
       handle: node.handle,
 
+      description: node.descriptionHtml?.replace(/<\/?[^>]+(>|$)/g, ''),
+
+      productType: node.productType,
+
+      tags: node.tags,
+
+      priceRange: node.priceRange,
+
       images: [
 
         ...(node.featuredImage && node.featuredImage.url ? [node.featuredImage.url] : []),
@@ -2908,6 +3127,22 @@ try {
 
         title: v.node.title,
 
+        price: v.node.price,
+
+        compareAtPrice: v.node.compareAtPrice,
+
+        availableForSale: v.node.availableForSale,
+
+        sku: v.node.sku,
+
+        weight: v.node.weight,
+
+        weightUnit: v.node.weightUnit,
+
+        barcode: v.node.barcode,
+
+        selectedOptions: v.node.selectedOptions,
+
         image: v.node.image && v.node.image.url ? v.node.image.url : null
 
       }))
@@ -2920,7 +3155,18 @@ try {
 
   products = filteredProducts;
 
-  
+  console.log('[fetchProducts] ✅ Processed Products:', products);
+  console.log('[fetchProducts] 📋 Sample Product Data:', products.slice(0, 2).map(p => ({
+    id: p.id,
+    title: p.title,
+    handle: p.handle,
+    description: p.description,
+    productType: p.productType,
+    tags: p.tags,
+    priceRange: p.priceRange,
+    variants: p.variants?.length || 0,
+    media: p.media?.length || 0
+  })));
 
   // Debug logging for all products with videos
 
@@ -2934,7 +3180,7 @@ try {
 
 } catch (err) {
 
-  const isMobile = window.innerWidth <= 768;
+  const isMobile = window.innerWidth < 668;
   const carouselVertical = isMobile ? document.querySelector('.mobile-carousel-vertical') : document.querySelector('.desktop-carousel-vertical');
   if (carouselVertical) carouselVertical.innerHTML = '<div style="color:red;">Failed to load products</div>';
 
@@ -2943,6 +3189,7 @@ try {
 let menuLevels = { level1: [], level2: [], level3: [] };
 
 let allProductsBackup = [];
+window.allProductsBackup = allProductsBackup;
 
 let settingsPanelVisible = false;
 
@@ -3047,6 +3294,7 @@ yAxisSelect.innerHTML = '<option value="none">None</option>';
 function afterProductsLoaded() {
 
 allProductsBackup = products.slice();
+window.allProductsBackup = allProductsBackup;
 
 renderCarousels(); }
 
@@ -3405,19 +3653,38 @@ function handleCollectionClick(collection, level) {
 
 const children = getCollectionChildren(collection);
 
+// Check if this collection is already selected at this level (toggle behavior)
+const currentSelectedCollection = selectedCollections[`level${level}`];
+const isAlreadySelected = currentSelectedCollection && currentSelectedCollection.title === collection.title;
+
+if (isAlreadySelected) {
+  // Toggle behavior: if clicking the same collection, collapse its child layers
+  console.log('[HierarchicalCarousel] 🔄 Toggling collection:', collection.title, 'at level:', level);
+  
+  // Use helper function to ensure proper synchronization
+  synchronizeLevelVisibility(level);
+  
+  // Update current level to the clicked level
+  currentLevel = level;
+  
+  // Update breadcrumb to show only up to this level
+  updateBreadcrumb(level, collection);
+  
+  // Update spinning tool for this collection
+  updateSpinningToolForCollection(collection);
+  
+  return; // Exit early for toggle behavior
+}
+
+// Normal behavior: select this collection and show its children
 selectedCollections[`level${level}`] = collection;
 
 currentLevel = level + 1;
 
 updateBreadcrumb(level + 1, collection);
 
-
-
 // Update spinning tool for all levels when clicked
-
 updateSpinningToolForCollection(collection);
-
-
 
 if (level < 3 && children.length > 0) {
 
@@ -3464,25 +3731,7 @@ for (let i = 1; i <= level; i++) {
     breadcrumbItem.textContent = selectedCollections.level2?.title || 'Sub Sub Layer';  }
 
   breadcrumbItem.addEventListener('click', () => {
-
     navigateToLevel(i);
-
-    // Ensure spinning tool is updated when navigating via breadcrumb
-
-    if (i === 1) {
-
-      // Going back to top level - show all products
-
-      if (allProductsBackup && allProductsBackup.length > 0) {
-
-        products = allProductsBackup.slice();
-
-        renderCarousels();
-
-      }
-
-    }
-
   });
 
   if (i === level) {
@@ -3494,6 +3743,30 @@ for (let i = 1; i <= level; i++) {
   breadcrumbNav.appendChild(breadcrumbItem);
 
 } }
+
+// Helper function to ensure proper level visibility synchronization
+function synchronizeLevelVisibility(targetLevel) {
+  // Hide all levels first
+  for (let i = 1; i <= 3; i++) {
+    const levelElement = document.getElementById(`level-${i}-carousel`);
+    if (levelElement) {
+      levelElement.style.display = 'none';
+    }
+  }
+  
+  // Show only levels up to target level
+  for (let i = 1; i <= targetLevel; i++) {
+    const levelElement = document.getElementById(`level-${i}-carousel`);
+    if (levelElement) {
+      levelElement.style.display = 'block';
+    }
+  }
+  
+  // Clear deeper level selections
+  for (let i = targetLevel + 1; i <= 3; i++) {
+    selectedCollections[`level${i}`] = null;
+  }
+}
 
 function navigateToLevel(targetLevel) {
 
@@ -3513,9 +3786,8 @@ if (targetLevel === 1) {
 
   currentLevel = 2;
 
-  document.getElementById('level-2-carousel').style.display = 'block';
-
-  document.getElementById('level-3-carousel').style.display = 'none';
+  // Use helper function to ensure proper synchronization
+  synchronizeLevelVisibility(2);
 
   const children = getCollectionChildren(selectedCollections.level1);
 
@@ -3531,7 +3803,8 @@ if (targetLevel === 1) {
 
   currentLevel = 3;
 
-  document.getElementById('level-3-carousel').style.display = 'block';
+  // Use helper function to ensure proper synchronization
+  synchronizeLevelVisibility(3);
 
   const children = getCollectionChildren(selectedCollections.level2);
 
@@ -3811,6 +4084,14 @@ try {
 
         handle: node.handle,
 
+        description: node.descriptionHtml?.replace(/<\/?[^>]+(>|$)/g, ''),
+
+        productType: node.productType,
+
+        tags: node.tags,
+
+        priceRange: node.priceRange,
+
         images: [
 
           ...(node.featuredImage && node.featuredImage.url ? [node.featuredImage.url] : []),
@@ -3828,6 +4109,22 @@ try {
           id: v.node.id,
 
           title: v.node.title,
+
+          price: v.node.price,
+
+          compareAtPrice: v.node.compareAtPrice,
+
+          availableForSale: v.node.availableForSale,
+
+          sku: v.node.sku,
+
+          weight: v.node.weight,
+
+          weightUnit: v.node.weightUnit,
+
+          barcode: v.node.barcode,
+
+          selectedOptions: v.node.selectedOptions,
 
           image: v.node.image && v.node.image.url ? v.node.image.url : null
 
@@ -3851,11 +4148,8 @@ currentLevel = 1;
 
 selectedCollections = { level1: null, level2: null, level3: null };
 
-document.getElementById('level-1-carousel').style.display = 'block';
-
-document.getElementById('level-2-carousel').style.display = 'none';
-
-document.getElementById('level-3-carousel').style.display = 'none';
+// Use helper function to ensure proper synchronization
+synchronizeLevelVisibility(1);
 
 updateBreadcrumb(1);
 
@@ -4325,6 +4619,10 @@ fetch(SHOPIFY_STOREFRONT_API, {
 
   .then(data => {
 
+    console.log('[fetchMenuAndFormat] 📦 Raw Shopify API Response:', data);
+    console.log('[fetchMenuAndFormat] 📊 Menu Data:', data.data?.menu);
+    console.log('[fetchMenuAndFormat] 🔢 Menu Items Found:', data.data?.menu?.items?.length || 0);
+
     const menu = data.data.menu;
 
     function formatProduct(productNode) {
@@ -4585,7 +4883,7 @@ fetch(SHOPIFY_STOREFRONT_API, {
 
     // Update mobile carousel with the same data
 
-    if (window.innerWidth <= 768) {
+    if (window.innerWidth < 668) {
 
       console.log('[MobileApp] 🔄 Updating mobile carousel with hierarchical menu data');
 
@@ -4645,9 +4943,11 @@ if (!Array.isArray(collectionIds) || collectionIds.length === 0) {
 
   fetchProducts();
 
-  return; }
+  return; 
 
-const query = `query GetCollectionProducts($ids: [ID!]!) {\n  nodes(ids: $ids) {\n    ... on Collection {\n      products(first: 100) {\n        edges {\n          node {\n            id\n            title\n            handle\n            featuredImage { url altText }\n            media(first: 50) {\n              edges {\n                node {\n                  __typename\n                  ... on MediaImage {\n                    image { url altText }\n                  }\n                  ... on Video {\n                    sources { url mimeType }\n                    previewImage { url }\n                  }\n                }\n              }\n            }\n            variants(first: 50) {\n              edges {\n                node {\n                  id\n                  title\n                  image { url altText }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}`;
+}
+
+const query = `query GetCollectionProducts($ids: [ID!]!) {\n  nodes(ids: $ids) {\n    ... on Collection {\n      products(first: 100) {\n        edges {\n          node {\n            id\n            title\n            handle\n            descriptionHtml\n            productType\n            tags\n            priceRange {\n              minVariantPrice { amount currencyCode }\n              maxVariantPrice { amount currencyCode }\n            }\n            featuredImage { url altText }\n            media(first: 50) {\n              edges {\n                node {\n                  __typename\n                  ... on MediaImage {\n                    image { url altText }\n                  }\n                  ... on Video {\n                    sources { url mimeType }\n                    previewImage { url }\n                  }\n                }\n              }\n            }\n            variants(first: 50) {\n              edges {\n                node {\n                  id\n                  title\n                  price { amount currencyCode }\n                  compareAtPrice { amount currencyCode }\n                  availableForSale\n                  sku\n                  weight\n                  weightUnit\n                  barcode\n                  selectedOptions { name value }\n                  image { url altText }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}`;
 
 const variables = { ids: collectionIds.map(id => `gid://shopify/Collection/${id}`) };
 
@@ -4668,6 +4968,10 @@ const res = await fetch(SHOPIFY_STOREFRONT_API, {
 });
 
 const data = await res.json();
+
+console.log('[fetchProductsForLayer] 📦 Raw Shopify API Response:', data);
+console.log('[fetchProductsForLayer] 📊 Collections Data:', data.data?.nodes);
+console.log('[fetchProductsForLayer] 🔢 Collections Found:', data.data?.nodes?.length || 0);
 
 const productStatusData = await fetchProductStatus();
 
@@ -4739,6 +5043,14 @@ if (data.data && data.data.nodes) {
 
           handle: product.handle,
 
+          description: product.descriptionHtml?.replace(/<\/?[^>]+(>|$)/g, ''),
+
+          productType: product.productType,
+
+          tags: product.tags,
+
+          priceRange: product.priceRange,
+
           images: [
 
             ...(product.featuredImage && product.featuredImage.url ? [product.featuredImage.url] : []),
@@ -4756,6 +5068,22 @@ if (data.data && data.data.nodes) {
             id: v.node.id,
 
             title: v.node.title,
+
+            price: v.node.price,
+
+            compareAtPrice: v.node.compareAtPrice,
+
+            availableForSale: v.node.availableForSale,
+
+            sku: v.node.sku,
+
+            weight: v.node.weight,
+
+            weightUnit: v.node.weightUnit,
+
+            barcode: v.node.barcode,
+
+            selectedOptions: v.node.selectedOptions,
 
             image: v.node.image && v.node.image.url ? v.node.image.url : null
 
@@ -5063,7 +5391,9 @@ for (const collectionId of yAxisCollectionIds) {
 
     const data = await response.json();
 
-
+    console.log(`[fetchYAxisCollectionProducts] 📦 Raw Shopify API Response for collection "${collectionId}":`, data);
+    console.log(`[fetchYAxisCollectionProducts] 📊 Collection Data:`, data.data?.collection);
+    console.log(`[fetchYAxisCollectionProducts] 🔢 Products in Collection:`, data.data?.collection?.products?.edges?.length || 0);
 
     if (data.data && data.data.collection && data.data.collection.products) {
 
@@ -5129,11 +5459,19 @@ for (const collectionId of yAxisCollectionIds) {
 
           name: node.title,
 
-          handle: node.handle,
+        handle: node.handle,
 
-          collectionId: collectionId,
+        description: node.descriptionHtml?.replace(/<\/?[^>]+(>|$)/g, ''),
 
-          collectionTitle: data.data.collection.title,
+        productType: node.productType,
+
+        tags: node.tags,
+
+        priceRange: node.priceRange,
+
+        collectionId: collectionId,
+
+        collectionTitle: data.data.collection.title,
 
           images: [
 
@@ -5152,6 +5490,22 @@ for (const collectionId of yAxisCollectionIds) {
             id: v.node.id,
 
             title: v.node.title,
+
+            price: v.node.price,
+
+            compareAtPrice: v.node.compareAtPrice,
+
+            availableForSale: v.node.availableForSale,
+
+            sku: v.node.sku,
+
+            weight: v.node.weight,
+
+            weightUnit: v.node.weightUnit,
+
+            barcode: v.node.barcode,
+
+            selectedOptions: v.node.selectedOptions,
 
             image: v.node.image && v.node.image.url ? v.node.image.url : null
 
@@ -5339,6 +5693,10 @@ for (const collectionId of collectionIds) {
 
     const data = await response.json();
 
+    console.log(`[fetchXAxisCollectionProducts] 📦 Raw Shopify API Response for collection "${collectionId}":`, data);
+    console.log(`[fetchXAxisCollectionProducts] 📊 Collection Data:`, data.data?.collection);
+    console.log(`[fetchXAxisCollectionProducts] 🔢 Products in Collection:`, data.data?.collection?.products?.edges?.length || 0);
+
     if (data.data && data.data.collection && data.data.collection.products) {
 
       const collectionProducts = data.data.collection.products.edges.map(edge => {
@@ -5403,11 +5761,19 @@ for (const collectionId of collectionIds) {
 
           name: node.title,
 
-          handle: node.handle,
+        handle: node.handle,
 
-          collectionId: collectionId,
+        description: node.descriptionHtml?.replace(/<\/?[^>]+(>|$)/g, ''),
 
-          collectionTitle: data.data.collection.title,
+        productType: node.productType,
+
+        tags: node.tags,
+
+        priceRange: node.priceRange,
+
+        collectionId: collectionId,
+
+        collectionTitle: data.data.collection.title,
 
           images: [
 
@@ -5426,6 +5792,22 @@ for (const collectionId of collectionIds) {
             id: v.node.id,
 
             title: v.node.title,
+
+            price: v.node.price,
+
+            compareAtPrice: v.node.compareAtPrice,
+
+            availableForSale: v.node.availableForSale,
+
+            sku: v.node.sku,
+
+            weight: v.node.weight,
+
+            weightUnit: v.node.weightUnit,
+
+            barcode: v.node.barcode,
+
+            selectedOptions: v.node.selectedOptions,
 
             image: v.node.image && v.node.image.url ? v.node.image.url : null
 
@@ -5553,6 +5935,20 @@ if (xAxisCollectionHandle) {
 
               handle
 
+              descriptionHtml
+
+              productType
+
+              tags
+
+              priceRange {
+
+                minVariantPrice { amount currencyCode }
+
+                maxVariantPrice { amount currencyCode }
+
+              }
+
               featuredImage { url altText }
 
               media(first: 50) {
@@ -5592,6 +5988,22 @@ if (xAxisCollectionHandle) {
                     id
 
                     title
+
+                    price { amount currencyCode }
+
+                    compareAtPrice { amount currencyCode }
+
+                    availableForSale
+
+                    sku
+
+                    weight
+
+                    weightUnit
+
+                    barcode
+
+                    selectedOptions { name value }
 
                     image { url altText }
 
@@ -5635,7 +6047,9 @@ if (xAxisCollectionHandle) {
 
     const data = await response.json();
 
-    console.log(`[SpinningTool] 📥 API response:`, data);
+    console.log(`[SpinningTool] 📦 Raw Shopify API Response for collection "${xAxisCollectionHandle}":`, data);
+    console.log(`[SpinningTool] 📊 Collection Data:`, data.data?.collection);
+    console.log(`[SpinningTool] 🔢 Products in Collection:`, data.data?.collection?.products?.edges?.length || 0);
 
     if (data.data && data.data.collection && data.data.collection.products) {
 
@@ -5726,6 +6140,22 @@ if (xAxisCollectionHandle) {
             id: v.node.id,
 
             title: v.node.title,
+
+            price: v.node.price,
+
+            compareAtPrice: v.node.compareAtPrice,
+
+            availableForSale: v.node.availableForSale,
+
+            sku: v.node.sku,
+
+            weight: v.node.weight,
+
+            weightUnit: v.node.weightUnit,
+
+            barcode: v.node.barcode,
+
+            selectedOptions: v.node.selectedOptions,
 
             image: v.node.image && v.node.image.url ? v.node.image.url : null
 
@@ -5861,7 +6291,7 @@ if (!STOREFRONT_TOKEN) {
 
   console.error('[SpinningTool] ❌ Missing Storefront API token');
 
-  const isMobile = window.innerWidth <= 768;
+  const isMobile = window.innerWidth < 668;
   const carouselVertical = isMobile ? document.querySelector('.mobile-carousel-vertical') : document.querySelector('.desktop-carousel-vertical');
   if (carouselVertical) carouselVertical.innerHTML = '<div style="color:red;">Failed to load products: missing Storefront API token</div>';
 
@@ -6125,6 +6555,9 @@ function initMobileApp() {
 
   console.log('[MobileApp] 📱 Initializing mobile app functionality');
 
+  // Load saved theme
+  loadTheme();
+
   // Initialize gallery functionality
   initGallery();
   
@@ -6135,7 +6568,7 @@ function initMobileApp() {
 
   // Check if we're on mobile
 
-  const isMobile = window.innerWidth <= 768;
+  const isMobile = window.innerWidth < 668;
 
   
 
@@ -6191,6 +6624,154 @@ function initMobileApp() {
 
   }
 
+}
+
+// Enhanced mobile app initialization with state preservation
+function initMobileAppWithState(preservedState = null) {
+  console.log('[MobileApp] 🔄 Initializing mobile app with state preservation');
+  
+  // Load saved theme
+  loadTheme();
+  
+  // Initialize gallery functionality
+  initGallery();
+  
+  // Initialize detail modal functionality
+  initDetailModal();
+  
+  // Check if we're on mobile
+  const isMobile = window.innerWidth < 668;
+  
+  if (isMobile) {
+    // Show mobile interface, hide desktop
+    const mobileContainer = document.getElementById('mobile-app-container');
+    const desktopContainer = document.getElementById('hierarchical-carousel');
+    
+    if (mobileContainer) {
+      mobileContainer.style.display = 'flex';
+    }
+    if (desktopContainer) {
+      desktopContainer.style.display = 'none';
+    }
+    
+    // Initialize mobile hierarchical carousel with preserved state
+    initMobileHierarchicalCarouselWithState(preservedState);
+  } else {
+    // Show desktop interface, hide mobile
+    const mobileContainer = document.getElementById('mobile-app-container');
+    const desktopContainer = document.getElementById('hierarchical-carousel');
+    
+    if (mobileContainer) {
+      mobileContainer.style.display = 'none';
+    }
+    if (desktopContainer) {
+      desktopContainer.style.display = 'block';
+    }
+    
+    // Restore desktop state if available
+    if (preservedState) {
+      restoreDesktopState(preservedState);
+    }
+  }
+}
+
+// Initialize mobile hierarchical carousel with preserved state
+function initMobileHierarchicalCarouselWithState(preservedState = null) {
+  console.log('[MobileApp] 🔄 Initializing mobile carousel with preserved state');
+  
+  // Wait for the mobile carousel container to be available
+  setTimeout(() => {
+    const mobileCarousel = document.getElementById('mobile-hierarchical-carousel');
+    
+    if (mobileCarousel) {
+      console.log('[MobileApp] 🎨 Mobile carousel found, populating with preserved data...');
+      
+      // Initialize mobile carousel with proper state - hide level 2 and 3
+      document.getElementById('mobile-level-2-carousel').style.display = 'none';
+      
+      // Hide level 3 completely
+      const level3Carousel = document.getElementById('mobile-level-3-carousel');
+      if (level3Carousel) {
+        level3Carousel.style.display = 'none';
+        level3Carousel.style.visibility = 'hidden';
+        level3Carousel.style.height = '0';
+        level3Carousel.style.overflow = 'hidden';
+        level3Carousel.classList.add('hidden');
+      }
+      
+      // Populate mobile carousel with preserved state
+      populateMobileCarouselWithState(preservedState);
+    }
+  }, 100);
+}
+
+// Populate mobile carousel with preserved state
+function populateMobileCarouselWithState(preservedState = null) {
+  const mobileLevel1Items = document.getElementById('mobile-level-1-items');
+  
+  if (!mobileLevel1Items) {
+    console.log('[MobileApp] ❌ Mobile level 1 items container not found');
+    return;
+  }
+  
+  console.log('[MobileApp] 📦 Populating mobile carousel with preserved state');
+  
+  // Clear existing content
+  mobileLevel1Items.innerHTML = '';
+  
+  // Use preserved state data if available
+  if (preservedState && preservedState.carouselData && preservedState.carouselData.xAxisCollections.length > 0) {
+    console.log('[MobileApp] 🎯 Using preserved carousel data');
+    
+    preservedState.carouselData.xAxisCollections.forEach((collection, index) => {
+      const collectionItem = createCollectionItem(collection, 1);
+      collectionItem.onclick = () => selectMobileCollection(collection.title, index);
+      mobileLevel1Items.appendChild(collectionItem);
+    });
+    
+    console.log('[MobileApp] 📝 Restored', preservedState.carouselData.xAxisCollections.length, 'collections');
+  } else {
+    // Fallback to regular population
+    populateMobileCarousel();
+  }
+  
+  console.log('[MobileApp] ✅ Mobile carousel populated with preserved state');
+}
+
+// Restore desktop state after viewport change
+function restoreDesktopState(preservedState) {
+  console.log('[Desktop] 🔄 Restoring desktop state after viewport change');
+  
+  if (!preservedState) return;
+  
+  // Restore global state variables
+  if (preservedState.horizontalIndex !== undefined) {
+    window.horizontalIndex = preservedState.horizontalIndex;
+  }
+  if (preservedState.verticalIndex !== undefined) {
+    window.verticalIndex = preservedState.verticalIndex;
+  }
+  if (preservedState.currentXAxisCollection) {
+    window.currentXAxisCollection = preservedState.currentXAxisCollection;
+  }
+  if (preservedState.currentYAxisCollection) {
+    window.currentYAxisCollection = preservedState.currentYAxisCollection;
+  }
+  
+  // Restore carousel data
+  if (preservedState.carouselData) {
+    if (preservedState.carouselData.xAxisCollections) {
+      window.xAxisCollections = preservedState.carouselData.xAxisCollections;
+    }
+    if (preservedState.carouselData.yAxisCollections) {
+      window.yAxisCollections = preservedState.carouselData.yAxisCollections;
+    }
+    if (preservedState.carouselData.products) {
+      window.products = preservedState.carouselData.products;
+    }
+  }
+  
+  console.log('[Desktop] ✅ Desktop state restored successfully');
 }
 
 
@@ -7001,30 +7582,6 @@ function selectMobileProduct(productName, index, collection) {
 
 
 
-// Handle mobile variant selection
-
-function selectMobileVariant(variantName, index) {
-
-  console.log('[MobileApp] 🎨 Mobile variant selected:', variantName);
-
-  
-
-  // This would trigger the spinning tool to show the selected variant
-
-  // For now, just show an alert
-
-  alert(`Selected: ${variantName}`);
-
-  
-
-  // You could also trigger the spinning tool update here
-
-  // updateSpinningToolWithVariant(variantName, index);
-
-}
-
-
-
 // Mobile navigation functions
 
 function goBack() {
@@ -7111,13 +7668,87 @@ function setFilter(filter) {
 
   
 
-  // Here you would typically filter products based on the selected filter
-
-  alert(`Filter applied: ${filter}`);
+  // Apply gender-based filtering
+  filterProductsByGender(filter);
 
 }
 
 
+
+function filterProductsByGender(gender) {
+  console.log(`[GenderFilter] 🔍 Filtering products by gender: ${gender}`);
+
+  // Reset all index states when switching filters
+  horizontalIndex = 0;
+  verticalIndex = 0;
+  activeCarousel = "horizontal";
+
+  if (gender === 'all') {
+    // Show all products
+    if (window.allProductsBackup && window.allProductsBackup.length > 0) {
+      products = window.allProductsBackup.slice();
+      renderCarousels();
+      console.log('[GenderFilter] 🔄 Showing all products:', products.length);
+    }
+    return;
+  }
+
+  // Filter products by gender tag
+  const searchSource = window.allProductsBackup && window.allProductsBackup.length > 0 
+    ? window.allProductsBackup 
+    : products;
+
+  const filteredProducts = searchSource.filter(product => {
+    if (!product.tags || !Array.isArray(product.tags)) {
+      return false;
+    }
+    
+    // Check if any tag contains the gender string (case-insensitive)
+    return product.tags.some(tag => 
+      tag.toLowerCase().includes(gender.toLowerCase())
+    );
+  });
+
+  products = filteredProducts;
+  
+  // Show empty state message if no products found
+  if (filteredProducts.length === 0) {
+    showEmptyStateMessage(gender);
+  } else {
+    hideEmptyStateMessage();
+    renderCarousels();
+  }
+  
+  console.log(`[GenderFilter] 🔍 Found ${filteredProducts.length} products for ${gender} category`);
+}
+
+function showEmptyStateMessage(gender) {
+  console.log(`[GenderFilter] 📭 No products found for ${gender} category`);
+  
+  const isMobile = window.innerWidth < 668;
+  const carouselVertical = isMobile ? document.querySelector('.mobile-carousel-vertical') : document.querySelector('.desktop-carousel-vertical');
+  const carouselHorizontal = isMobile ? document.querySelector('.mobile-carousel-horizontal') : document.querySelector('.desktop-carousel-horizontal');
+  
+  const emptyMessage = `${gender.charAt(0).toUpperCase() + gender.slice(1)} category doesn't have any products`;
+  
+  if (carouselVertical) {
+    carouselVertical.innerHTML = `
+      <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.2em;color:#666;text-align:center;padding:20px;">
+        <div style="font-size:3em;margin-bottom:20px;">📭</div>
+        <div>${emptyMessage}</div>
+      </div>
+    `;
+  }
+  
+  if (carouselHorizontal) {
+    carouselHorizontal.innerHTML = '';
+  }
+}
+
+function hideEmptyStateMessage() {
+  // This function can be used to hide empty state if needed
+  // Currently handled by renderCarousels() when products are available
+}
 
 function showFilters() {
 
@@ -7190,92 +7821,562 @@ function showGallery() {
 function refreshView() {
   console.log('[MobileApp] 🔄 Refresh clicked');
   
-  // Toggle product detail section
-  const productDetailSection = document.getElementById('product-detail-section');
+  // Check if we're on mobile or desktop
+  const isMobile = window.innerWidth < 668;
   
-  if (productDetailSection) {
-    if (productDetailSection.style.display === 'none' || productDetailSection.style.display === '') {
-      productDetailSection.style.display = 'block';
-      // Hide the main product image when showing details
-      const mainProductImg = document.getElementById('main-product-img');
-      if (mainProductImg) {
-        mainProductImg.style.display = 'none';
+  if (isMobile) {
+    // Mobile: Toggle product detail section
+    const productDetailSection = document.getElementById('product-detail-section');
+    
+    if (productDetailSection) {
+      if (productDetailSection.style.display === 'none' || productDetailSection.style.display === '') {
+        productDetailSection.style.display = 'block';
+        // Hide the main product image when showing details
+        const mainProductImg = document.getElementById('main-product-img');
+        if (mainProductImg) {
+          mainProductImg.style.display = 'none';
+        }
+        updateProductDetailSection();
+        console.log('[MobileApp] 📱 Product detail section shown');
+        
+        // Update heart icon state when showing product details
+        setTimeout(() => {
+          console.log('[MobileApp] 🔄 Updating heart icon after refresh');
+          updateHeartIconState();
+        }, 200);
+      } else {
+        productDetailSection.style.display = 'none';
+        console.log('[MobileApp] 📱 Product detail section hidden');
       }
-      updateProductDetailSection();
-      console.log('[MobileApp] 📱 Product detail section shown');
-      
-      // Update heart icon state when showing product details
-      setTimeout(() => {
-        console.log('[MobileApp] 🔄 Updating heart icon after refresh');
-        updateHeartIconState();
-      }, 200);
-    } else {
-      productDetailSection.style.display = 'none';
-      console.log('[MobileApp] 📱 Product detail section hidden');
+    }
+  } else {
+    // Desktop: Toggle desktop product detail section with backdrop
+    const desktopProductDetailSection = document.getElementById('desktop-product-detail-section');
+    const desktopBackdrop = document.getElementById('desktop-product-detail-backdrop');
+    
+    if (desktopProductDetailSection) {
+      if (desktopProductDetailSection.style.display === 'none' || desktopProductDetailSection.style.display === '') {
+        // Show backdrop and section
+        desktopBackdrop.classList.add('active');
+        desktopProductDetailSection.style.display = 'block';
+        updateDesktopProductDetailSection();
+        console.log('[Desktop] 🖥️ Desktop product detail section shown');
+        
+        // Update heart icon state when showing product details
+        setTimeout(() => {
+          console.log('[Desktop] 🔄 Updating heart icon after refresh');
+          updateDesktopHeartIconState();
+        }, 200);
+      } else {
+        // Hide backdrop and section
+        desktopBackdrop.classList.remove('active');
+        desktopProductDetailSection.style.display = 'none';
+        console.log('[Desktop] 🖥️ Desktop product detail section hidden');
+      }
     }
   }
 }
+
+function updateDesktopProductDetailSection() {
+  const currentProduct = getCurrentDisplayedProduct();
+  
+  if (!currentProduct) {
+    console.log('[Desktop] ❌ No current product found for desktop detail section');
+    return;
+  }
+  
+  console.log('[Desktop] 📝 Updating desktop product detail section with:', currentProduct.title);
+  
+  // Update product title
+  const desktopProductTitle = document.getElementById('desktop-product-title');
+  if (desktopProductTitle) {
+    desktopProductTitle.textContent = currentProduct.title;
+  }
+  
+  // Update product description
+  const desktopProductDescription = document.getElementById('desktop-product-description');
+  if (desktopProductDescription) {
+    desktopProductDescription.textContent = currentProduct.description || 'Product description not available.';
+  }
+  
+  // Update pricing with real-time data
+  let minPrice = 0;
+  let maxPrice = 0;
+  let currencyCode = 'USD';
+  
+  if (currentProduct.priceRange) {
+    // Use priceRange if available
+    minPrice = parseFloat(currentProduct.priceRange.minVariantPrice?.amount || '0');
+    maxPrice = parseFloat(currentProduct.priceRange.maxVariantPrice?.amount || '0');
+    currencyCode = currentProduct.priceRange.minVariantPrice?.currencyCode || 'USD';
+  } else if (currentProduct.variants && currentProduct.variants.length > 0) {
+    // Fallback to variant prices when priceRange is undefined
+    const variantPrices = currentProduct.variants
+      .filter(variant => variant.price && variant.price.amount)
+      .map(variant => parseFloat(variant.price.amount));
+    
+    if (variantPrices.length > 0) {
+      minPrice = Math.min(...variantPrices);
+      maxPrice = Math.max(...variantPrices);
+      currencyCode = currentProduct.variants[0].price?.currencyCode || 'USD';
+    }
+  }
+  
+  if (minPrice > 0) {
+    const desktopCurrentPrice = document.getElementById('desktop-current-price');
+    const desktopOriginalPrice = document.getElementById('desktop-original-price');
+    const desktopSaveBadge = document.getElementById('desktop-save-badge');
+    
+    if (desktopCurrentPrice) {
+      desktopCurrentPrice.textContent = `$${minPrice.toFixed(2)}`;
+    }
+    
+    // Calculate discount if there's a compareAtPrice or price difference
+    let originalPrice = 0;
+    let discountPercentage = 0;
+    
+    if (maxPrice > minPrice) {
+      originalPrice = maxPrice;
+    } else if (currentProduct.variants && currentProduct.variants.length > 0) {
+      const variant = currentProduct.variants[0];
+      if (variant.compareAtPrice && variant.compareAtPrice.amount) {
+        originalPrice = parseFloat(variant.compareAtPrice.amount);
+      }
+    }
+    
+    if (originalPrice > minPrice) {
+      if (desktopOriginalPrice) {
+        desktopOriginalPrice.textContent = `$${originalPrice.toFixed(2)}`;
+      }
+      
+      // Calculate discount percentage
+      discountPercentage = Math.round(((originalPrice - minPrice) / originalPrice) * 100);
+      
+      if (desktopSaveBadge && discountPercentage > 0) {
+        desktopSaveBadge.textContent = `Save ${discountPercentage}%`;
+      }
+    }
+    
+    console.log('[Desktop] 💰 Real-time pricing updated:', {
+      currentPrice: minPrice,
+      originalPrice,
+      discountPercentage,
+      currencyCode,
+      priceSource: currentProduct.priceRange ? 'priceRange' : 'variants'
+    });
+  }
+  
+  // Update product variants dynamically
+  updateDesktopProductVariants(currentProduct);
+  
+  console.log('[Desktop] ✅ Desktop product detail section updated');
+}
+
+function updateDesktopProductVariants(product) {
+  const variantsContainer = document.getElementById('desktop-product-variants');
+  if (!variantsContainer) return;
+  
+  // Clear existing variants
+  variantsContainer.innerHTML = '';
+  
+  // Get product variants or create default ones
+  const variants = product.variants || [
+    { id: 1, title: 'Default', image: product.images && product.images[0] ? product.images[0] : 'cart.png' },
+    { id: 2, title: 'Variant 2', image: product.images && product.images[1] ? product.images[1] : 'home.png' },
+    { id: 3, title: 'Variant 3', image: product.images && product.images[2] ? product.images[2] : 'profile.png' },
+    { id: 4, title: 'Variant 4', image: product.images && product.images[3] ? product.images[3] : 'setting.png' }
+  ];
+  
+  variants.forEach((variant, index) => {
+    const variantElement = document.createElement('div');
+    variantElement.className = `variant-thumbnail ${index === 0 ? 'active' : ''}`;
+    variantElement.onclick = () => selectDesktopVariant(index, variant);
+    
+    const imgElement = document.createElement('img');
+    // Use the actual variant image URL if it's a full URL, otherwise use asset path
+    if (variant.image && variant.image.startsWith('http')) {
+      imgElement.src = variant.image;
+    } else {
+      imgElement.src = `/extensions/dummy-table/assets/${variant.image}`;
+    }
+    imgElement.alt = variant.title;
+    imgElement.className = 'variant-img';
+    imgElement.width = 60;
+    imgElement.height = 60;
+    
+    variantElement.appendChild(imgElement);
+    variantsContainer.appendChild(variantElement);
+  });
+}
+
+function selectDesktopVariant(index, variant) {
+  console.log('[Desktop] 🎯 Selected variant:', variant.title);
+  
+  // Update active variant
+  const variants = document.querySelectorAll('#desktop-product-variants .variant-thumbnail');
+  variants.forEach((v, i) => {
+    v.classList.toggle('active', i === index);
+  });
+  
+  // Update product information based on variant
+  const desktopProductTitle = document.getElementById('desktop-product-title');
+  if (desktopProductTitle) {
+    desktopProductTitle.textContent = variant.title;
+  }
+}
+
+function toggleDesktopWishlist() {
+  console.log('[Desktop] ❤️ Desktop wishlist toggled');
+  const wishlistButton = document.getElementById('desktop-wishlist-button');
+  const wishlistIcon = wishlistButton.querySelector('.wishlist-icon');
+  
+  if (!wishlistButton || !wishlistIcon) {
+    console.log('[Desktop] ❤️ Heart button or icon not found');
+    return;
+  }
+  
+  const activeProduct = getCurrentDisplayedProduct();
+  const wishlist = getWishlistFromStorage();
+  
+  let currentProductTitle = '';
+  let isCurrentlyInWishlist = false;
+  
+  // Try to get product title from active product first
+  if (activeProduct) {
+    currentProductTitle = activeProduct.title || activeProduct.name || '';
+    console.log('[Desktop] ❤️ Toggle - Active product found:', {
+      title: currentProductTitle,
+      fullProduct: activeProduct
+    });
+  }
+  
+  // If no title from active product, try DOM fallback
+  if (!currentProductTitle) {
+    currentProductTitle = document.getElementById('desktop-product-title')?.textContent || '';
+    console.log('[Desktop] ❤️ Toggle - Using DOM fallback title:', currentProductTitle);
+  }
+  
+  // Check if current product is in wishlist
+  if (currentProductTitle) {
+    isCurrentlyInWishlist = wishlist.some(item => item.title === currentProductTitle);
+  }
+  
+  console.log('[Desktop] ❤️ Toggle - Current state:', {
+    currentProductTitle,
+    isCurrentlyInWishlist,
+    wishlistCount: wishlist.length,
+    wishlistTitles: wishlist.map(item => item.title)
+  });
+  
+  if (isCurrentlyInWishlist) {
+    // Remove from wishlist
+    const updatedWishlist = wishlist.filter(item => item.title !== currentProductTitle);
+    saveWishlistToStorage(updatedWishlist);
+    
+    wishlistButton.classList.remove('active');
+    wishlistIcon.textContent = '♡';
+    
+    console.log('[Desktop] ❤️ Product removed from wishlist:', currentProductTitle);
+  } else {
+    // Add to wishlist
+    const currentProduct = getCurrentProductData();
+    wishlist.push(currentProduct);
+    saveWishlistToStorage(wishlist);
+    
+    wishlistButton.classList.add('active');
+    wishlistIcon.textContent = '♥';
+    
+    console.log('[Desktop] ❤️ Product added to wishlist:', currentProductTitle);
+  }
+}
+
+function updateDesktopHeartIconState() {
+  console.log('[Desktop] 💖 Updating desktop heart icon state');
+  const wishlistButton = document.getElementById('desktop-wishlist-button');
+  const wishlistIcon = wishlistButton?.querySelector('.wishlist-icon');
+  
+  if (!wishlistButton || !wishlistIcon) {
+    console.log('[Desktop] 💖 Heart button or icon not found');
+    return;
+  }
+  
+  const activeProduct = getCurrentDisplayedProduct();
+  const wishlist = getWishlistFromStorage();
+  
+  let currentProductTitle = '';
+  
+  // Try to get product title from active product first
+  if (activeProduct) {
+    currentProductTitle = activeProduct.title || activeProduct.name || '';
+  }
+  
+  // If no title from active product, try DOM fallback
+  if (!currentProductTitle) {
+    currentProductTitle = document.getElementById('desktop-product-title')?.textContent || '';
+  }
+  
+  // Check if current product is in wishlist
+  const isInWishlist = currentProductTitle ? wishlist.some(item => item.title === currentProductTitle) : false;
+  
+  // Update button state
+  wishlistButton.classList.toggle('active', isInWishlist);
+  wishlistIcon.textContent = isInWishlist ? '♥' : '♡';
+  
+  console.log('[Desktop] 💖 Heart icon state updated:', {
+    currentProductTitle,
+    isInWishlist: isInWishlist ? 'active' : 'inactive',
+    wishlistCount: wishlist.length
+  });
+}
+
+function decreaseDesktopQuantity() {
+  const quantityElement = document.getElementById('desktop-quantity-value');
+  if (quantityElement) {
+    let quantity = parseInt(quantityElement.textContent) || 1;
+    if (quantity > 1) {
+      quantity--;
+      quantityElement.textContent = quantity;
+    }
+  }
+}
+
+function increaseDesktopQuantity() {
+  const quantityElement = document.getElementById('desktop-quantity-value');
+  if (quantityElement) {
+    let quantity = parseInt(quantityElement.textContent) || 1;
+    quantity++;
+    quantityElement.textContent = quantity;
+  }
+}
+
+// Add backdrop click handler to close desktop product detail
+document.addEventListener('DOMContentLoaded', function() {
+  const desktopBackdrop = document.getElementById('desktop-product-detail-backdrop');
+  if (desktopBackdrop) {
+    desktopBackdrop.addEventListener('click', function(e) {
+      if (e.target === desktopBackdrop) {
+        // Close the desktop product detail section
+        const desktopProductDetailSection = document.getElementById('desktop-product-detail-section');
+        if (desktopProductDetailSection && desktopProductDetailSection.style.display !== 'none') {
+          desktopBackdrop.classList.remove('active');
+          desktopProductDetailSection.style.display = 'none';
+          console.log('[Desktop] 🖥️ Desktop product detail section closed via backdrop click');
+        }
+      }
+    });
+  }
+});
 
 function updateProductDetailSection() {
   const currentProduct = getCurrentDisplayedProduct();
   
   if (!currentProduct) {
-    console.log('[MobileApp] ⚠️ No current product found');
+    console.log('[MobileApp] ❌ No current product found for mobile detail section');
     return;
   }
   
-  console.log('[MobileApp] 📱 Updating product detail section with:', currentProduct);
+  console.log('[MobileApp] 📝 Updating mobile product detail section with:', currentProduct.title);
   
   // Update product title
   const productTitle = document.querySelector('.product-title');
-  if (productTitle && currentProduct.title) {
+  if (productTitle) {
     productTitle.textContent = currentProduct.title;
-    console.log('[MobileApp] 📱 Product title updated to:', currentProduct.title);
   }
   
-  // Update product variants thumbnails
-  const variantThumbnails = document.querySelectorAll('.variant-thumbnail');
-  if (variantThumbnails.length > 0 && currentProduct.images && currentProduct.images.length > 0) {
-    variantThumbnails.forEach((thumbnail, index) => {
-      const img = thumbnail.querySelector('.variant-img');
-      if (img && currentProduct.images[index]) {
-        img.src = currentProduct.images[index];
-        img.alt = `${currentProduct.title} - Variant ${index + 1}`;
+  // Update product description
+  const productDescription = document.querySelector('.product-description p');
+  if (productDescription) {
+    productDescription.textContent = currentProduct.description || 'Product description not available.';
+  }
+  
+  // Update pricing with real-time data
+  let minPrice = 0;
+  let maxPrice = 0;
+  let currencyCode = 'USD';
+  
+  if (currentProduct.priceRange) {
+    // Use priceRange if available
+    minPrice = parseFloat(currentProduct.priceRange.minVariantPrice?.amount || '0');
+    maxPrice = parseFloat(currentProduct.priceRange.maxVariantPrice?.amount || '0');
+    currencyCode = currentProduct.priceRange.minVariantPrice?.currencyCode || 'USD';
+  } else if (currentProduct.variants && currentProduct.variants.length > 0) {
+    // Fallback to variant prices when priceRange is undefined
+    const variantPrices = currentProduct.variants
+      .filter(variant => variant.price && variant.price.amount)
+      .map(variant => parseFloat(variant.price.amount));
+    
+    if (variantPrices.length > 0) {
+      minPrice = Math.min(...variantPrices);
+      maxPrice = Math.max(...variantPrices);
+      currencyCode = currentProduct.variants[0].price?.currencyCode || 'USD';
+    }
+  }
+  
+  if (minPrice > 0) {
+    const currentPrice = document.querySelector('.current-price');
+    const originalPrice = document.querySelector('.original-price');
+    const saveBadge = document.querySelector('.save-badge');
+    
+    if (currentPrice) {
+      currentPrice.textContent = `$${minPrice.toFixed(2)}`;
+    }
+    
+    // Calculate discount if there's a compareAtPrice or price difference
+    let originalPriceValue = 0;
+    let discountPercentage = 0;
+    
+    if (maxPrice > minPrice) {
+      originalPriceValue = maxPrice;
+    } else if (currentProduct.variants && currentProduct.variants.length > 0) {
+      const variant = currentProduct.variants[0];
+      if (variant.compareAtPrice && variant.compareAtPrice.amount) {
+        originalPriceValue = parseFloat(variant.compareAtPrice.amount);
       }
+    }
+    
+    if (originalPriceValue > minPrice) {
+      if (originalPrice) {
+        originalPrice.textContent = `$${originalPriceValue.toFixed(2)}`;
+      }
+      
+      // Calculate discount percentage
+      discountPercentage = Math.round(((originalPriceValue - minPrice) / originalPriceValue) * 100);
+      
+      if (saveBadge && discountPercentage > 0) {
+        saveBadge.textContent = `Save ${discountPercentage}%`;
+      }
+    }
+    
+    console.log('[MobileApp] 💰 Real-time pricing updated:', {
+      currentPrice: minPrice,
+      originalPrice: originalPriceValue,
+      discountPercentage,
+      currencyCode,
+      priceSource: currentProduct.priceRange ? 'priceRange' : 'variants'
     });
   }
   
-  // Update price information if available
-  if (currentProduct.price) {
-    const currentPrice = document.querySelector('.current-price');
-    if (currentPrice) {
-      currentPrice.textContent = `$${currentProduct.price}`;
-    }
-  }
+  // Update product variants dynamically
+  updateMobileProductVariants(currentProduct);
   
-  if (currentProduct.compare_at_price) {
-    const originalPrice = document.querySelector('.original-price');
-    if (originalPrice) {
-      originalPrice.textContent = `$${currentProduct.compare_at_price}`;
-    }
-  }
-  
-  // Update product description if available
-  if (currentProduct.description) {
-    const description = document.querySelector('.product-description p');
-    if (description) {
-      description.textContent = currentProduct.description;
-    }
-  }
-  
-  // Update heart icon state after updating product details
-  setTimeout(() => {
-    console.log('[MobileApp] 📱 Updating heart icon after product detail update');
-    updateHeartIconState();
-  }, 100);
+  console.log('[MobileApp] ✅ Mobile product detail section updated');
 }
 
+function updateMobileProductVariants(product) {
+  const variantsContainer = document.querySelector('.product-variants');
+  if (!variantsContainer) return;
+  
+  // Clear existing variants
+  variantsContainer.innerHTML = '';
+  
+  // Get product variants or create default ones
+  const variants = product.variants || [
+    { id: 1, title: 'Default', image: product.images && product.images[0] ? product.images[0] : 'cart.png' },
+    { id: 2, title: 'Variant 2', image: product.images && product.images[1] ? product.images[1] : 'home.png' },
+    { id: 3, title: 'Variant 3', image: product.images && product.images[2] ? product.images[2] : 'profile.png' },
+    { id: 4, title: 'Variant 4', image: product.images && product.images[3] ? product.images[3] : 'setting.png' }
+  ];
+  
+  variants.forEach((variant, index) => {
+    const variantElement = document.createElement('div');
+    variantElement.className = `variant-thumbnail ${index === 0 ? 'active' : ''}`;
+    variantElement.onclick = () => selectMobileVariant(index, variant);
+    
+    const imgElement = document.createElement('img');
+    // Use the actual variant image URL if it's a full URL, otherwise use asset path
+    if (variant.image && variant.image.startsWith('http')) {
+      imgElement.src = variant.image;
+    } else {
+      imgElement.src = `/extensions/dummy-table/assets/${variant.image}`;
+    }
+    imgElement.alt = variant.title;
+    imgElement.className = 'variant-img';
+    imgElement.width = 60;
+    imgElement.height = 60;
+    
+    variantElement.appendChild(imgElement);
+    variantsContainer.appendChild(variantElement);
+  });
+}
 
+function selectMobileVariant(index, variant) {
+  console.log('[MobileApp] 🎯 Selected variant:', variant.title);
+  
+  // Update active variant
+  const variants = document.querySelectorAll('.variant-thumbnail');
+  variants.forEach((v, i) => {
+    v.classList.toggle('active', i === index);
+  });
+  
+  // Update product information based on variant
+  const productTitle = document.querySelector('.product-title');
+  if (productTitle) {
+    productTitle.textContent = variant.title;
+  }
+  
+  // Update pricing based on selected variant
+  if (variant.price && variant.price.amount) {
+    const currentPrice = document.querySelector('.current-price');
+    const originalPrice = document.querySelector('.original-price');
+    const saveBadge = document.querySelector('.save-badge');
+    
+    const variantPrice = parseFloat(variant.price.amount);
+    const currencyCode = variant.price.currencyCode || 'USD';
+    
+    if (currentPrice) {
+      currentPrice.textContent = `$${variantPrice.toFixed(2)}`;
+    }
+    
+    // Check for compareAtPrice to show discount
+    if (variant.compareAtPrice && variant.compareAtPrice.amount) {
+      const comparePrice = parseFloat(variant.compareAtPrice.amount);
+      
+      if (comparePrice > variantPrice) {
+        if (originalPrice) {
+          originalPrice.textContent = `$${comparePrice.toFixed(2)}`;
+        }
+        
+        // Calculate discount percentage
+        const discountPercentage = Math.round(((comparePrice - variantPrice) / comparePrice) * 100);
+        
+        if (saveBadge && discountPercentage > 0) {
+          saveBadge.textContent = `Save ${discountPercentage}%`;
+        }
+        
+        console.log('[MobileApp] 💰 Variant pricing updated with discount:', {
+          currentPrice: variantPrice,
+          originalPrice: comparePrice,
+          discountPercentage,
+          currencyCode
+        });
+      }
+    } else {
+      // Clear original price and save badge if no compareAtPrice
+      if (originalPrice) {
+        originalPrice.textContent = '';
+      }
+      if (saveBadge) {
+        saveBadge.textContent = '';
+      }
+      
+      console.log('[MobileApp] 💰 Variant pricing updated:', {
+        currentPrice: variantPrice,
+        currencyCode
+      });
+    }
+  }
+  
+  // Update main product image
+  const mainProductImg = document.getElementById('main-product-img');
+  if (mainProductImg && variant.image) {
+    if (variant.image.startsWith('http')) {
+      mainProductImg.src = variant.image;
+    } else {
+      mainProductImg.src = `/extensions/dummy-table/assets/${variant.image}`;
+    }
+    mainProductImg.alt = variant.title;
+  }
+}
 
 function toggleLike() {
   console.log('[MobileApp] ❤️ Like clicked');
@@ -7387,6 +8488,7 @@ function saveWishlistToStorage(wishlist) {
 function updateWishlistBadge() {
   const wishlist = getWishlistFromStorage();
   const badge = document.getElementById('wishlist-badge');
+  const desktopBadge = document.getElementById('desktop-wishlist-badge');
   
   if (badge) {
     const count = wishlist.length;
@@ -7398,7 +8500,21 @@ function updateWishlistBadge() {
       badge.classList.remove('hidden');
     }
     
-    console.log('[Wishlist] Badge updated:', count);
+    console.log('[Wishlist] Mobile badge updated:', count);
+  }
+  
+  // Update desktop badge as well
+  if (desktopBadge) {
+    const count = wishlist.length;
+    desktopBadge.textContent = count;
+    
+    if (count === 0) {
+      desktopBadge.classList.add('hidden');
+    } else {
+      desktopBadge.classList.remove('hidden');
+    }
+    
+    console.log('[Wishlist] Desktop badge updated:', count);
   }
 }
 
@@ -7414,12 +8530,61 @@ function getCurrentProductData() {
   if (activeProduct) {
     // Use data from the active product
     productTitle = activeProduct.title || activeProduct.name || 'Unknown Product';
-    currentPrice = '$80.00'; // Default price, could be enhanced to get from product data
-    originalPrice = '$90.00'; // Default original price
+    
+    // Calculate real-time pricing from priceRange or variants
+    let minPrice = 0;
+    let maxPrice = 0;
+    let currencyCode = 'USD';
+    
+    if (activeProduct.priceRange) {
+      // Use priceRange if available
+      minPrice = parseFloat(activeProduct.priceRange.minVariantPrice?.amount || '0');
+      maxPrice = parseFloat(activeProduct.priceRange.maxVariantPrice?.amount || '0');
+      currencyCode = activeProduct.priceRange.minVariantPrice?.currencyCode || 'USD';
+    } else if (activeProduct.variants && activeProduct.variants.length > 0) {
+      // Fallback to variant prices when priceRange is undefined
+      const variantPrices = activeProduct.variants
+        .filter(variant => variant.price && variant.price.amount)
+        .map(variant => parseFloat(variant.price.amount));
+      
+      if (variantPrices.length > 0) {
+        minPrice = Math.min(...variantPrices);
+        maxPrice = Math.max(...variantPrices);
+        currencyCode = activeProduct.variants[0].price?.currencyCode || 'USD';
+      }
+    }
+    
+    // Use min price as current price, max price as original price if different
+    if (minPrice > 0) {
+      currentPrice = `$${minPrice.toFixed(2)}`;
+      if (maxPrice > minPrice) {
+        originalPrice = `$${maxPrice.toFixed(2)}`;
+      } else {
+        // Check variants for compareAtPrice to calculate discount
+        if (activeProduct.variants && activeProduct.variants.length > 0) {
+          const variant = activeProduct.variants[0];
+          if (variant.compareAtPrice && variant.compareAtPrice.amount) {
+            const comparePrice = parseFloat(variant.compareAtPrice.amount);
+            if (comparePrice > minPrice) {
+              originalPrice = `$${comparePrice.toFixed(2)}`;
+            }
+          }
+        }
+      }
+    } else {
+      currentPrice = '$0.00';
+      originalPrice = '';
+    }
+    
     productImage = activeProduct.images && activeProduct.images[0] ? activeProduct.images[0] : '';
     
-    console.log('[Wishlist] 📸 Using active product data:', {
+    console.log('[Wishlist] 💰 Real-time pricing calculated:', {
       title: productTitle,
+      currentPrice,
+      originalPrice,
+      minPrice,
+      maxPrice,
+      currencyCode,
       image: productImage,
       hasImages: activeProduct.images && activeProduct.images.length > 0
     });
@@ -7537,16 +8702,134 @@ function increaseQuantity() {
   quantityValue.textContent = currentQuantity;
 }
 
-function addToCart() {
+async function addToCart() {
   console.log('[MobileApp] 🛒 Add to cart clicked');
-  const quantity = document.getElementById('quantity-value').textContent;
-  alert(`Added ${quantity} item(s) to cart!`);
+  
+  try {
+    // Get the current product from the spinning tool
+    const currentProduct = getCurrentDisplayedProduct();
+    
+    if (!currentProduct) {
+      console.error('[MobileApp] ❌ No current product found');
+      alert('No product selected. Please select a product first.');
+      return;
+    }
+    
+    // Get the selected quantity
+    const quantityElement = document.getElementById('quantity-value');
+    const quantity = quantityElement ? parseInt(quantityElement.textContent) || 1 : 1;
+    
+    console.log('[MobileApp] 🛒 Adding product to cart:', {
+      product: currentProduct.title || currentProduct.name,
+      quantity: quantity
+    });
+    
+    // Add quantity to the product object
+    const productWithQuantity = {
+      ...currentProduct,
+      quantity: quantity
+    };
+    
+    // Use the existing addProductToCart function
+    await addProductToCart(productWithQuantity);
+    
+    console.log('[MobileApp] ✅ Product added to cart successfully');
+    
+  } catch (error) {
+    console.error('[MobileApp] ❌ Error adding product to cart:', error);
+    alert(`Failed to add product to cart: ${error.message}`);
+  }
 }
 
 function buyNow() {
   console.log('[MobileApp] 💳 Buy now clicked');
-  const quantity = document.getElementById('quantity-value').textContent;
-  alert(`Proceeding to checkout with ${quantity} item(s)!`);
+  
+  try {
+    // Get current product data
+    const productData = getCurrentProductData();
+    
+    // Try to get quantity from mobile first, then desktop
+    let quantityElement = document.getElementById('quantity-value');
+    if (!quantityElement) {
+      quantityElement = document.getElementById('desktop-quantity-value');
+    }
+    
+    const quantity = parseInt(quantityElement?.textContent) || 1;
+    
+    if (!productData) {
+      console.error('[MobileApp] ❌ No product data available for checkout');
+      alert('Product information not available. Please try again.');
+      return;
+    }
+    
+    console.log('[MobileApp] 📦 Product data for checkout:', productData);
+    console.log('[MobileApp] 🔢 Quantity:', quantity);
+    
+    // Create checkout URL with product data
+    const checkoutUrl = createCheckoutUrl(productData, quantity);
+    
+    if (checkoutUrl) {
+      console.log('[MobileApp] 🛒 Redirecting to checkout:', checkoutUrl);
+      // Redirect to checkout
+      window.location.href = checkoutUrl;
+    } else {
+      console.error('[MobileApp] ❌ Failed to create checkout URL');
+      alert('Unable to proceed to checkout. Please try again.');
+    }
+    
+  } catch (error) {
+    console.error('[MobileApp] ❌ Error in buyNow:', error);
+    alert(`Checkout error: ${error.message}`);
+  }
+}
+
+// Helper function to create checkout URL
+function createCheckoutUrl(productData, quantity) {
+  try {
+    // For Shopify, we can use the cart API to add items and then redirect to checkout
+    // This is a simplified implementation - in a real scenario, you'd use Shopify's Cart API
+    
+    // Extract price value (remove $ and convert to cents for Shopify)
+    const priceValue = productData.price.replace('$', '').replace(',', '');
+    const priceInCents = Math.round(parseFloat(priceValue) * 100);
+    
+    // Create a simple checkout URL with product information
+    // In a real implementation, you would:
+    // 1. Add the item to cart via Shopify Cart API
+    // 2. Redirect to /cart or /checkout
+    
+    // For demo purposes, we'll create a URL that could be used with Shopify's checkout
+    const checkoutParams = new URLSearchParams({
+      'items[0][id]': productData.id || 'demo-product-id', // Use the product ID from getCurrentProductData
+      'items[0][quantity]': quantity.toString(),
+      'items[0][title]': productData.title,
+      'items[0][price]': priceInCents.toString(),
+      'items[0][image]': productData.image || '',
+      'items[0][original_price]': productData.originalPrice ? productData.originalPrice.replace('$', '').replace(',', '') : ''
+    });
+    
+    // For now, redirect to cart page (you can modify this to go directly to checkout)
+    // In a real Shopify implementation, you might use:
+    // - `/cart` to go to cart page
+    // - `/checkout` to go directly to checkout
+    // - Or use Shopify's Cart API to add items and then redirect
+    const checkoutUrl = `/cart?${checkoutParams.toString()}`;
+    
+    console.log('[MobileApp] 🔗 Created checkout URL:', checkoutUrl);
+    console.log('[MobileApp] 📋 Checkout parameters:', {
+      productId: productData.id,
+      quantity: quantity,
+      title: productData.title,
+      price: productData.price,
+      image: productData.image
+    });
+    
+    return checkoutUrl;
+    
+  } catch (error) {
+    console.error('[MobileApp] ❌ Error creating checkout URL:', error);
+    return null;
+  }
 }
 
 // Product variant selection
@@ -7991,6 +9274,10 @@ function showProductDetail() {
   const productDetailSection = document.getElementById('product-detail-section');
   if (productDetailSection) {
     productDetailSection.style.display = 'block';
+    
+    // Update product details when showing the section
+    updateProductDetailSection();
+    
     // Update heart icon state when showing product details
     setTimeout(() => {
       updateHeartIconState();
@@ -8050,42 +9337,173 @@ function initDetailModal() {
 
 // Search functionality
 
-function initSearch() {
+function searchProducts(query) {
+  if (!query || query.trim().length === 0) {
+    // If query is empty, restore all products based on current filter
+    if (window.allProductsBackup && window.allProductsBackup.length > 0) {
+      // Check if there's an active gender filter
+      const activeFilterButton = document.querySelector('.filter-button.active');
+      if (activeFilterButton) {
+        const filterText = activeFilterButton.querySelector('.filter-text')?.textContent?.toLowerCase();
+        if (filterText && filterText !== 'all') {
+          // Apply the current gender filter
+          filterProductsByGender(filterText);
+        } else {
+          // Show all products
+          products = window.allProductsBackup.slice();
+          renderCarousels();
+        }
+      } else {
+        products = window.allProductsBackup.slice();
+        renderCarousels();
+      }
+      console.log('[Search] 🔄 Restored products based on current filter');
+    }
+    return;
+  }
 
+  const searchTerm = query.toLowerCase().trim();
+  
+  // Search in all available products (use backup if available, otherwise current products)
+  const searchSource = window.allProductsBackup && window.allProductsBackup.length > 0 
+    ? window.allProductsBackup 
+    : products;
+
+  const filteredProducts = searchSource.filter(product => {
+    // Search in product title
+    const titleMatch = product.title && product.title.toLowerCase().includes(searchTerm);
+    
+    // Search in product description
+    const descriptionMatch = product.description && product.description.toLowerCase().includes(searchTerm);
+    
+    // Search in product tags
+    const tagsMatch = product.tags && product.tags.some(tag => 
+      tag.toLowerCase().includes(searchTerm)
+    );
+    
+    // Search in product handle
+    const handleMatch = product.handle && product.handle.toLowerCase().includes(searchTerm);
+    
+    return titleMatch || descriptionMatch || tagsMatch || handleMatch;
+  });
+
+  products = filteredProducts;
+  
+  // Show empty state message if no products found
+  if (filteredProducts.length === 0) {
+    const isMobile = window.innerWidth < 668;
+    const carouselVertical = isMobile ? document.querySelector('.mobile-carousel-vertical') : document.querySelector('.desktop-carousel-vertical');
+    const carouselHorizontal = isMobile ? document.querySelector('.mobile-carousel-horizontal') : document.querySelector('.desktop-carousel-horizontal');
+    
+    if (carouselVertical) {
+      carouselVertical.innerHTML = `
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.2em;color:#666;text-align:center;padding:20px;">
+          <div style="font-size:3em;margin-bottom:20px;">🔍</div>
+          <div>No products found for "${query}"</div>
+        </div>
+      `;
+    }
+    
+    if (carouselHorizontal) {
+      carouselHorizontal.innerHTML = '';
+    }
+  } else {
+    renderCarousels();
+  }
+  
+  console.log(`[Search] 🔍 Found ${filteredProducts.length} products matching "${query}"`);
+}
+
+function initSearch() {
   const searchInput = document.getElementById('search-input');
 
   if (searchInput) {
-
     searchInput.addEventListener('input', function(e) {
-
       const query = e.target.value;
-
       console.log('[MobileApp] 🔍 Search query:', query);
-
       
-
-      if (query.length > 2) {
-
-        // Here you would typically perform search
-
-        console.log('[MobileApp] 🔍 Performing search for:', query);
-
-      }
-
+      // Perform search immediately as user types
+      searchProducts(query);
     });
 
+    // Add clear search functionality on escape key
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        searchInput.value = '';
+        searchProducts('');
+      }
+    });
   }
-
 }
 
 
 
+// Enhanced viewport detection with debouncing
+let resizeTimeout;
+let lastViewportWidth = window.innerWidth;
+let lastViewportHeight = window.innerHeight;
+
 // Handle window resize to switch between mobile and desktop
-
 function handleResize() {
+  // Clear existing timeout
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout);
+  }
+  
+  // Debounce resize events to prevent excessive re-renders
+  resizeTimeout = setTimeout(() => {
+    const currentWidth = window.innerWidth;
+    const currentHeight = window.innerHeight;
+    
+    // Only trigger updates if viewport actually changed significantly
+    const widthChanged = Math.abs(currentWidth - lastViewportWidth) > 50;
+    const heightChanged = Math.abs(currentHeight - lastViewportHeight) > 50;
+    
+    if (widthChanged || heightChanged) {
+      console.log(`[Viewport] 📐 Viewport changed: ${lastViewportWidth}x${lastViewportHeight} → ${currentWidth}x${currentHeight}`);
+      
+      // Update stored dimensions
+      lastViewportWidth = currentWidth;
+      lastViewportHeight = currentHeight;
+      
+      // Handle viewport change
+      handleViewportChange();
+    }
+  }, 150); // 150ms debounce
+}
 
-  initMobileApp();
-
+// Enhanced viewport change handler
+function handleViewportChange() {
+  const isMobile = window.innerWidth < 668;
+  
+  console.log(`[Viewport] 🔄 Handling viewport change - Mobile: ${isMobile}`);
+  
+  // Store current state before switching
+  const currentState = {
+    horizontalIndex: window.horizontalIndex || 0,
+    verticalIndex: window.verticalIndex || 0,
+    currentXAxisCollection: window.currentXAxisCollection,
+    currentYAxisCollection: window.currentYAxisCollection,
+    carouselData: {
+      xAxisCollections: window.xAxisCollections || [],
+      yAxisCollections: window.yAxisCollections || [],
+      products: window.products || []
+    }
+  };
+  
+  // Re-initialize mobile app with state preservation
+  initMobileAppWithState(currentState);
+  
+  // Re-render carousels with updated viewport settings
+  renderCarousels();
+  
+  // Re-attach event listeners for the new viewport
+  attachListenersWhenReady();
+  
+  // Force iPhone re-render if needed
+  setTimeout(() => {
+    forceIPhoneRerender();
+  }, 200);
 }
 
 

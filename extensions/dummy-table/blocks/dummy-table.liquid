@@ -4,7 +4,7 @@
 <div class="mobile-app-container" id="mobile-app-container">
   <!-- Header Section -->
   <div class="mobile-header">
-    <button class="back-button" onclick="goBack()">← Back</button>
+    {% comment %} <button class="back-button" onclick="goBack()">← Back</button> {% endcomment %}
     <div class="app-title">Kelly's Kapsule</div>
     <button class="notification-bell" onclick="showNotifications()">🔔</button>
   </div>
@@ -23,7 +23,7 @@
   </div>
 
   <!-- Filter Buttons -->
-  <div class="filter-section">
+  {% comment %} <div class="filter-section">
     <button class="filter-button active" onclick="setFilter('all')">
       <span class="filter-icon">All</span>
     </button>
@@ -39,7 +39,7 @@
       <img src="{{ 'kids-icon.png' | asset_url }}" alt="Kids" class="filter-icon-img" width="20" height="20">
       <span class="filter-text">Kids</span>
     </button>
-  </div>
+  </div> {% endcomment %}
 
   <!-- Search Bar -->
   <div class="search-section">
@@ -181,22 +181,24 @@
       <button class="gallery-close-button" onclick="closeGallery()">✕</button>
     </div>
     
-    <div class="gallery-main-image-container">
-      <img src="{{ 'cart.png' | asset_url }}" alt="Gallery Main Image" class="gallery-main-img" id="gallery-main-img" width="400" height="400">
-    </div>
-    
-    <div class="gallery-thumbnails">
-      <div class="gallery-thumbnail active" onclick="selectGalleryImage(0)">
-        <img src="{{ 'cart.png' | asset_url }}" alt="Gold Watch" class="gallery-thumb-img" width="80" height="80">
+    <div class="gallery-body">
+      <div class="gallery-main-image-container">
+        <img src="{{ 'cart.png' | asset_url }}" alt="Gallery Main Image" class="gallery-main-img" id="gallery-main-img" width="400" height="400">
       </div>
-      <div class="gallery-thumbnail" onclick="selectGalleryImage(1)">
-        <img src="{{ 'home.png' | asset_url }}" alt="Silver Watch" class="gallery-thumb-img" width="80" height="80">
-      </div>
-      <div class="gallery-thumbnail" onclick="selectGalleryImage(2)">
-        <img src="{{ 'profile.png' | asset_url }}" alt="Rose Gold Watch" class="gallery-thumb-img" width="80" height="80">
-      </div>
-      <div class="gallery-thumbnail" onclick="selectGalleryImage(3)">
-        <img src="{{ 'setting.png' | asset_url }}" alt="Black Watch" class="gallery-thumb-img" width="80" height="80">
+      
+      <div class="gallery-thumbnails">
+        <div class="gallery-thumbnail active" onclick="selectGalleryImage(0)">
+          <img src="{{ 'cart.png' | asset_url }}" alt="Gold Watch" class="gallery-thumb-img" width="80" height="80">
+        </div>
+        <div class="gallery-thumbnail" onclick="selectGalleryImage(1)">
+          <img src="{{ 'home.png' | asset_url }}" alt="Silver Watch" class="gallery-thumb-img" width="80" height="80">
+        </div>
+        <div class="gallery-thumbnail" onclick="selectGalleryImage(2)">
+          <img src="{{ 'profile.png' | asset_url }}" alt="Rose Gold Watch" class="gallery-thumb-img" width="80" height="80">
+        </div>
+        <div class="gallery-thumbnail" onclick="selectGalleryImage(3)">
+          <img src="{{ 'setting.png' | asset_url }}" alt="Black Watch" class="gallery-thumb-img" width="80" height="80">
+        </div>
       </div>
     </div>
   </div>
@@ -209,24 +211,26 @@
       <button class="detail-close-button" onclick="closeDetailModal()">✕</button>
     </div>
     
-    <div class="detail-main-image-container">
-      <img src="{{ 'cart.png' | asset_url }}" alt="Detail Main Image" class="detail-main-img" id="detail-main-img" width="300" height="300">
-    </div>
-    
-    <!-- Bottom 4 Buttons -->
-    <div class="detail-bottom-buttons">
-      <button class="detail-action-btn active" onclick="selectActionButton(0, 'shop')">
-        <img src="{{ 'shopicon.svg' | asset_url }}" alt="Shop" class="detail-btn-icon" width="24" height="24">
-      </button>
-      <button class="detail-action-btn" onclick="selectActionButton(1, 'bookmark')">
-        <img src="{{ 'bookmark.svg' | asset_url }}" alt="Bookmark" class="detail-btn-icon" width="24" height="24">
-      </button>
-      <button class="detail-action-btn" onclick="selectActionButton(2, 'share')">
-        <img src="{{ 'share.svg' | asset_url }}" alt="Share" class="detail-btn-icon" width="24" height="24">
-      </button>
-      <button class="detail-action-btn" onclick="selectActionButton(3, 'add-to-cart')">
-        <img src="{{ 'add-to-cart.svg' | asset_url }}" alt="Add to Cart" class="detail-btn-icon" width="24" height="24">
-      </button>
+    <div class="detail-body">
+      <div class="detail-main-image-container">
+        <img src="{{ 'cart.png' | asset_url }}" alt="Detail Main Image" class="detail-main-img" id="detail-main-img" width="300" height="300">
+      </div>
+      
+      <!-- Bottom 4 Buttons -->
+      <div class="detail-bottom-buttons">
+        <button class="detail-action-btn active" onclick="selectActionButton(0, 'shop')">
+          <img src="{{ 'shopicon.svg' | asset_url }}" alt="Shop" class="detail-btn-icon" width="24" height="24">
+        </button>
+        <button class="detail-action-btn" onclick="selectActionButton(1, 'bookmark')">
+          <img src="{{ 'bookmark.svg' | asset_url }}" alt="Bookmark" class="detail-btn-icon" width="24" height="24">
+        </button>
+        <button class="detail-action-btn" onclick="selectActionButton(2, 'share')">
+          <img src="{{ 'share.svg' | asset_url }}" alt="Share" class="detail-btn-icon" width="24" height="24">
+        </button>
+        <button class="detail-action-btn" onclick="selectActionButton(3, 'add-to-cart')">
+          <img src="{{ 'add-to-cart.svg' | asset_url }}" alt="Add to Cart" class="detail-btn-icon" width="24" height="24">
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -270,7 +274,82 @@
 </div>
 
 <!-- Desktop Spinning Tool -->
-<div class="wrapper w-full h-full flex flex-col gap-9 justify-center items-center" id="desktop-spinning-tool-wrapper" style="position: relative;"> <div
+<div class="wrapper w-full h-full flex flex-col gap-9 justify-center items-center" id="desktop-spinning-tool-wrapper" style="position: relative;"> 
+  <!-- Desktop Product Controls -->
+  <div class="desktop-product-controls">
+    <div class="control-buttons-left">
+      <button class="control-button" onclick="showGallery()">
+        <img src="{{ 'gallery.png' | asset_url }}" alt="Gallery" class="control-icon" width="24" height="24">
+      </button>
+      <button class="control-button" onclick="refreshView()">
+        <img src="{{ 'flipping.png' | asset_url }}" alt="Refresh" class="control-icon" width="24" height="24">
+      </button>
+      <button class="control-button" onclick="toggleLike()">
+        <img src="{{ 'finger.png' | asset_url }}" alt="Like" class="control-icon" width="24" height="24">
+      </button>
+    </div>
+    <div class="toggle-switch" onclick="toggleTheme()">
+      <img src="{{ 'light.svg' | asset_url }}" alt="Light Mode" class="toggle-icon light-icon" width="16" height="16">
+      <img src="{{ 'dark.svg' | asset_url }}" alt="Dark Mode" class="toggle-icon dark-icon" width="16" height="16">
+    </div>
+  </div>
+
+  <!-- Desktop Product Detail Section -->
+  <div class="desktop-product-detail-backdrop" id="desktop-product-detail-backdrop"></div>
+  <div class="desktop-product-detail-section" id="desktop-product-detail-section" style="display: none;">
+    <!-- Product Variants Thumbnails -->
+    <div class="product-variants" id="desktop-product-variants">
+      <!-- Dynamic variants will be populated here -->
+    </div>
+
+    <!-- Product Information -->
+    <div class="product-info-section">
+      <div class="product-title-row">
+        <h2 class="product-title" id="desktop-product-title">Men's silver analog metal watch</h2>
+        <button class="wishlist-button" id="desktop-wishlist-button" onclick="toggleDesktopWishlist()">
+          <span class="wishlist-icon">♡</span>
+        </button>
+      </div>
+      
+      <div class="price-section">
+        <span class="current-price" id="desktop-current-price">$80.00</span>
+        <span class="original-price" id="desktop-original-price">$90.00</span>
+        <span class="save-badge" id="desktop-save-badge">SAVE 11%</span>
+      </div>
+      
+      <div class="product-description">
+        <p id="desktop-product-description">Cheer on your favorite red and white team in eye-popping style with these red & white striped game bib overalls! Each pair is made of 100 percent cotton for a comfortable, breathable fit regardless of the weather and includes...</p>
+      </div>
+      
+      <div class="product-features">
+        <div class="feature-item">
+          <div class="feature-icon">🛡️</div>
+          <span class="feature-text">Water Resistant</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">💎</div>
+          <span class="feature-text">Crystal Glass</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚖️</div>
+          <span class="feature-text">124 Gram</span>
+        </div>
+      </div>
+      
+      <div class="quantity-section">
+        <div class="quantity-selector">
+          <button class="quantity-btn minus-btn" onclick="decreaseDesktopQuantity()">-</button>
+          <span class="quantity-value" id="desktop-quantity-value">1</span>
+          <button class="quantity-btn plus-btn" onclick="increaseDesktopQuantity()">+</button>
+        </div>
+        <button class="add-to-cart-btn" onclick="addToCart()">ADD TO CART</button>
+      </div>
+      
+      <button class="buy-now-btn" onclick="buyNow()">BUY IT NOW</button>
+    </div>
+  </div>
+
+  <div
 class="carousel-container"
 id="desktop-spinning-tool-carousel"
 style="position: relative; width: 400px; height: 400px; perspective: 1000px;">
@@ -285,6 +364,26 @@ style="position: relative; width: 400px; height: 400px; perspective: 1000px;">
 </div>
 </div>
 
+<!-- Desktop Bottom Navigation -->
+<div class="bottom-navigation desktop-bottom-navigation">
+  <button class="nav-button active" onclick="navigateTo('home')">
+    <img src="{{ 'home.png' | asset_url }}" alt="Home" class="nav-icon-img" width="24" height="24">
+    <span class="nav-text">Home</span>
+  </button>
+  <button class="nav-button" onclick="navigateTo('cart')">
+    <img src="{{ 'cart-icon.svg' | asset_url }}" alt="Cart" class="nav-icon-img" width="24" height="24">
+    <span class="nav-text">Cart</span>
+  </button>
+  <button class="nav-button" onclick="navigateTo('wishlist')">
+    <div class="nav-icon-container">
+      <img src="{{ 'wishlist-icon.svg' | asset_url }}" alt="Wishlist" class="nav-icon-img" width="24" height="24">
+      <span class="wishlist-badge" id="desktop-wishlist-badge">0</span>
+    </div>
+    <span class="nav-text">Wishlist</span>
+  </button>
+</div>
+</div>
+
 <div id="product-overlay" class="product-overlay" style="display: none;">
 <div class="overlay-content">
   <button class="close-overlay" id="close-overlay">✕</button>
@@ -295,8 +394,8 @@ style="position: relative; width: 400px; height: 400px; perspective: 1000px;">
         <span class="cart-icon">🛒</span>
         Add to Cart
       </button>
+    </div>
   </div>
-</div>
 </div>
 </div>
 
@@ -304,13 +403,12 @@ style="position: relative; width: 400px; height: 400px; perspective: 1000px;">
 <div id="video-modal" class="video-modal">
   <div class="video-modal-content">
     <button class="video-modal-close" id="video-modal-close">✕</button>
-    <video id="modal-video" controls>
+    <video id="modal-video" controls preload="metadata" playsinline webkit-playsinline>
       <source src="" type="video/mp4">
       Your browser does not support the video tag.
     </video>
-      </div>
-        </div>
-      </div>
+  </div>
+</div>
 
 {% schema %}
 {
