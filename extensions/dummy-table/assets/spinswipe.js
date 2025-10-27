@@ -768,7 +768,7 @@ if (verticalCarousel) {
     const rotateAngle = index * (360 / 5);
 
     // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 550 ? '152px' : '170px'; 
+    const translateZ = window.innerWidth < 550 ? '162px' : '170px'; 
     panel.style.transform = `rotateX(${rotateAngle}deg) translateZ(${translateZ})`;
 
     panel.style.transformStyle = 'preserve-3d'; 
@@ -797,7 +797,7 @@ if (horizontalCarousel) {
     const rotateAngle = index * (360 / 5);
 
     // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 550 ? '152px' : '170px';
+    const translateZ = window.innerWidth < 550 ? '162px' : '170px';
     panel.style.transform = `rotateY(${rotateAngle}deg) translateZ(${translateZ})`;
 
     panel.style.transformStyle = 'preserve-3d';
@@ -985,7 +985,7 @@ if (hasXAxisCollections) {
     panel.className = 'carousel-panel';
 
     // Apply responsive translateZ based on screen width 
-    const translateZ = window.innerWidth < 550 ? '152px' : '170px';
+    const translateZ = window.innerWidth < 550 ? '162px' : '170px';
     panel.style.transform = `rotateY(${rotateAngle}deg) translateZ(${translateZ})`;
     applyIPhonePanelFixes(panel);
 
@@ -1092,7 +1092,7 @@ if (hasXAxisCollections) {
       panel.className = 'carousel-panel';
 
       // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 550 ? '152px' : '170px';
+    const translateZ = window.innerWidth < 550 ? '162px' : '170px';
     panel.style.transform = `rotateX(${rotateAngle}deg) translateZ(${translateZ})`;
 
       panel.innerHTML = `
@@ -1180,7 +1180,7 @@ if (hasXAxisCollections) {
     panel.className = 'carousel-panel';
 
     // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 550 ? '152px' : '170px';
+    const translateZ = window.innerWidth < 550 ? '162px' : '170px';
     panel.style.transform = `rotateX(${rotateAngle}deg) translateZ(${translateZ})`;
 
     panel.innerHTML = `
@@ -1205,14 +1205,10 @@ if (hasXAxisCollections) {
 
   // Track variation_view when vertical carousel is active and showing variations
 
-  if (activeCarousel === 'vertical' && currentProduct) {
-
+  if (activeCarousel === 'vertical' && currentProduct) {  
     trackInteraction(currentProduct, 'variation_view');
-
   }
-
-
-
+ 
   carouselHorizontal.innerHTML = '';
 
   dynamicProductsArray.forEach(function(product, index) {
@@ -1224,10 +1220,9 @@ if (hasXAxisCollections) {
     panel.className = 'carousel-panel';
 
     // Apply responsive translateZ based on screen width
-    const translateZ = window.innerWidth < 550 ? '152px' : '170px';
+    const translateZ = window.innerWidth < 550 ? '162px' : '170px';
     panel.style.transform = `rotateY(${rotateAngle}deg) translateZ(${translateZ})`;
 
-    
 
     // Check if current product has videos - only show icon on the front panel
 
@@ -1412,7 +1407,7 @@ function applyIPhoneContainerFixes(container) {
 function updateCarouselPanelTransforms() {
   const isExtraSmallScreen = window.innerWidth < 400;
   const isSmallScreen = window.innerWidth < 500;
-  const translateZ = isExtraSmallScreen ? '100px' : (isSmallScreen ? '152px' : '170px');
+  const translateZ = isExtraSmallScreen ? '100px' : (isSmallScreen ? '162px' : '170px');
   const isIPhone = /iPhone|iPad|iPod/.test(navigator.userAgent);
   
   console.log(`[iPhone Fix] 🔄 Applying translateZ: ${translateZ} for ${isIPhone ? 'iPhone' : 'other device'}`);
@@ -9523,7 +9518,6 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('resize', handleResize);
 
 });
-
 
 
 // Also initialize if script loads after DOM is ready
